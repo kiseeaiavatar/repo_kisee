@@ -15,7 +15,7 @@ import {
 } from "@livekit/components-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Room, RoomEvent } from "livekit-client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import type { ConnectionDetails } from "./api/connection-details/route";
 
 interface EventPayload {
@@ -23,6 +23,22 @@ interface EventPayload {
   items?: string[];
   description?: string;
   [key: string]: any;
+}
+
+function StageIndicator({ stage }: { stage: string }) {
+  const stages = {
+    greeting: "Begrüßung",
+    food_preferences: "Essensvorlieben",
+    sport_preferences: "Sportvorlieben",
+    beverage_preferences: "Getränkevorlieben",
+    final_agent: "Abschluss",
+  };
+
+  return (
+    <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm">
+      {stages[stage as keyof typeof stages] || stage}
+    </div>
+  );
 }
 
 export default function Page() {
@@ -113,51 +129,72 @@ export default function Page() {
 
 function SimpleVoiceAssistant(props: { onConnectButtonClicked: () => void }) {
   const { state: agentState } = useVoiceAssistant();
+  const [currentStage, setCurrentStage] = useState<string>("greeting");
+  const room = useContext(RoomContext);
+
+  useEffect(() => {
+    if (room) {
+      const handleDataReceived = (payload: Uint8Array) => {
+        try {
+          const data = JSON.parse(new TextDecoder().decode(payload));
+          if (data.type === "stage_update") {
+            setCurrentStage(data.stage);
+          }
+        } catch (e) {
+          console.error("Failed to parse stage update:", e);
+        }
+      };
+
+      room.on(RoomEvent.DataReceived, handleDataReceived);
+      return () => {
+        room.off(RoomEvent.DataReceived, handleDataReceived);
+      };
+    }
+  }, [room]);
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {agentState === "disconnected" ? (
-          <motion.div
-            key="disconnected"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.09, 1.04, 0.245, 1.055] }}
-            className="grid items-center justify-center h-full"
+    <AnimatePresence mode="wait">
+      {agentState === "disconnected" ? (
+        <motion.div
+          key="disconnected"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: [0.09, 1.04, 0.245, 1.055] }}
+          className="grid items-center justify-center h-full"
+        >
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="uppercase px-4 py-2 bg-white text-black rounded-md"
+            onClick={() => props.onConnectButtonClicked()}
           >
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="uppercase px-4 py-2 bg-white text-black rounded-md"
-              onClick={() => props.onConnectButtonClicked()}
-            >
-              Start a conversation
-            </motion.button>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="connected"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: [0.09, 1.04, 0.245, 1.055] }}
-            className="flex flex-col items-center gap-4 h-full"
-          >
-            <AgentVisualizer />
-            <div className="flex-1 w-full">
-              <TranscriptionView />
-            </div>
-            <div className="w-full">
-              <ControlBar onConnectButtonClicked={props.onConnectButtonClicked} />
-            </div>
-            <RoomAudioRenderer />
-            <NoAgentNotification state={agentState} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+            Start a conversation
+          </motion.button>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="connected"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3, ease: [0.09, 1.04, 0.245, 1.055] }}
+          className="flex flex-col items-center gap-4 h-full relative"
+        >
+          <StageIndicator stage={currentStage} />
+          <AgentVisualizer />
+          <div className="flex-1 w-full">
+            <TranscriptionView />
+          </div>
+          <div className="w-full">
+            <ControlBar onConnectButtonClicked={props.onConnectButtonClicked} />
+          </div>
+          <RoomAudioRenderer />
+          <NoAgentNotification state={agentState} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
