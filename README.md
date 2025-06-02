@@ -21,13 +21,15 @@ The system uses a single `DynamicAgent` that manages different states of the con
 
 ## Configuration
 
-The system is configured through `agent_config.json`, which defines:
+The system is configured through the mongoDB database, which defines:
 
 - State transitions
 - User instructions
 - End requirements
 - Event configurations (rating/swipe)
 - Items to be rated/swiped
+
+You can find the Database in voice_assistant/agents.
 
 Example configuration:
 
