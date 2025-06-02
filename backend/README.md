@@ -70,6 +70,10 @@ MONGODB_CONNECTION_STRING=mongodb://localhost:27017
 5. Start the backend server:
 
 ```bash
+# Make sure you're in the backend directory
+cd backend
+
+# Start the server with hot reload
 uvicorn main:app --reload
 ```
 

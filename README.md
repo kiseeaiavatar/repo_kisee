@@ -67,27 +67,37 @@ Events have a configurable timeout (default: 5 minutes) to allow users enough ti
 ## Usage
 
 1. Set up environment variables for Azure services
-2. Run the agent:
+
+2. Start the backend:
+
+```bash
+cd backend
+uvicorn main:app --reload
+```
+
+3. Start the frontend:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+4. Run the agent:
 
 ```bash
 cd agent
 python azure_agent.py
 ```
 
+The services will be available at:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- Admin Dashboard: http://localhost:3000/admin
+
 ## Environment Variables
 
 Required environment variables:
 
-- `AZURE_API_KEY`
-- `AZURE_OPENAI_REGION`
-- `AZURE_OPENAI_ENDPOINT`
-- `AZURE_OPENAI_DEPLOYMENT_NAME`
-- `AZURE_STT_API_KEY`
-- `AZURE_STT_REGION`
-- `AZURE_TTS_API_KEY`
-- `AZURE_TTS_REGION`
-- `AZURE_OPENAI_API_VERSION`
-- `AZURE_OPENAI_TTS_API_KEY`
-- `AZURE_OPENAI_TTS_MODEL`
-- `AZURE_OPENAI_STT_API_KEY`
-- `AZURE_OPENAI_STT_MODEL`
+- `
