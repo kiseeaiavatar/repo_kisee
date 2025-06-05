@@ -34,19 +34,12 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 load_dotenv()
 
 # Azure configuration
-AZURE_API_KEY = os.getenv("AZURE_API_KEY")
-AZURE_OPENAI_REGION = os.getenv("AZURE_OPENAI_REGION")
+AZURE_OPENAI_DEPLOYMENT = os.getenv(
+    "AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini-realtime-preview")
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-AZURE_STT_API_KEY = os.getenv("AZURE_STT_API_KEY")
-AZURE_STT_REGION = os.getenv("AZURE_STT_REGION")
-AZURE_TTS_API_KEY = os.getenv("AZURE_TTS_API_KEY")
-AZURE_TTS_REGION = os.getenv("AZURE_TTS_REGION")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
-AZURE_OPENAI_TTS_API_KEY = os.getenv("AZURE_OPENAI_TTS_API_KEY")
-AZURE_OPENAI_TTS_MODEL = os.getenv("AZURE_OPENAI_TTS_MODEL")
-AZURE_OPENAI_STT_API_KEY = os.getenv("AZURE_OPENAI_STT_API_KEY")
-AZURE_OPENAI_STT_MODEL = os.getenv("AZURE_OPENAI_STT_MODEL")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_API_VERSION = os.getenv(
+    "AZURE_OPENAI_API_VERSION", "2024-10-01-preview")
 
 # Configuration paths and constants
 AGENT_CONFIG_PATH = "./agent_config.json"
@@ -586,25 +579,14 @@ async def entrypoint(ctx: agents.JobContext):
 
     session = AgentSession[UserData](
         userdata=userdata,
-        stt=azure.STT(
-            speech_key=AZURE_STT_API_KEY,
-            speech_region=AZURE_STT_REGION,
-            language="de-DE"
-        ),
-        tts=azure.TTS(
-            speech_key=AZURE_TTS_API_KEY,
-            speech_region=AZURE_TTS_REGION,
-            voice="de-DE-KatjaNeural",
-        ),
-        llm=openai.LLM.with_azure(
-            azure_deployment=AZURE_OPENAI_DEPLOYMENT_NAME,
+        llm=openai.realtime.RealtimeModel.with_azure(
+            azure_deployment=AZURE_OPENAI_DEPLOYMENT,
             azure_endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_API_KEY,
+            api_key=AZURE_OPENAI_API_KEY,
             api_version=AZURE_OPENAI_API_VERSION,
         ),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
-        allow_interruptions=False
     )
 
     await session.start(
