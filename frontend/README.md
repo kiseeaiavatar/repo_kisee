@@ -31,7 +31,7 @@ And open http://localhost:3000 in your browser.
 You'll also need an agent to speak with. Try our [Voice AI Quickstart](https://docs.livekit.io/start/voice-ai) for the easiest way to get started.
 
 > [!NOTE]
-> If you need to modify the LiveKit project credentials used, you can edit `.env.local` (copy from `.env.example` if you don't have one) to suit your needs.
+> If you need to modify the LiveKit project credentials used, you can edit `.env.local` (copy from `.env` if you don't have one) to suit your needs.
 
 ## Contributing
 
