@@ -1,0 +1,61 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      command: ["uvicorn", "main:app", "--reload"]
+    ports:
+      - "8000:8000"
+    environment:
+      - UVICORN_RELOAD=true
+      - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    volumes:
+      - ./backend:/app:z
+    networks:
+      - kisee
+    depends_on:
+      - mongo
+
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+      command: ["python", "azure_agent.py", "dev"]
+    env_file: ./agent/.env
+    environment:
+      - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    networks:
+      - kisee
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    logging:
+      driver: none # mute log output
+    networks:
+      - kisee
+    volumes:
+      - mongodata:/data/db:z
+
+  mongo-express:
+    image: mongo-express
+    logging:
+      driver: none # mute log output
+    restart: always
+    ports:
+      - 8001:8081
+    environment:
+      ME_CONFIG_BASICAUTH: "false"
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+    depends_on:
+      - mongo
+    networks:
+      - kisee
+
+volumes:
+  mongodata:
+networks:
+  kisee:
+    name: kisee

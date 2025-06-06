@@ -59,7 +59,7 @@ cd agent
 2. Run the agent:
 
 ```bash
-python azure_agent.py
+python azure_agent.py dev
 ```
 
 The agent will connect to the LiveKit server and start listening for incoming calls.

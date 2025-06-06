@@ -1,21 +1,17 @@
 FROM python:3.11-slim
 
-WORKDIR /app
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
 
-# Copy the rest of the application
-COPY . .
-
-# Expose the port the app runs on
-EXPOSE 8000
+# Copy necessary files
+COPY requirements.txt azure_agent.py .
+RUN ls -la &&\
+    pip install --no-cache-dir -r requirements.txt &&\
+    python azure_agent.py download-files
 
 # Command to run the application
-CMD ["python", "azure_agent.py"] 
+CMD ["python", "azure_agent.py", "dev"]
