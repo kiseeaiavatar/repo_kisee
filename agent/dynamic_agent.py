@@ -1,140 +1,30 @@
-"""
-LiveKit Kisee - A conversational agent system for collecting user preferences.
+from user_data import UserData
 
-This module implements a dynamic state machine using a single agent that can
-handle different conversation states and collect user preferences through
-various interaction methods (rating and swipe events).
-"""
-
+import json
+import logging
 from livekit.agents import (
     function_tool,
     RunContext,
     Agent,
-    AgentSession,
-    RoomInputOptions,
     get_job_context,
 )
-from dotenv import load_dotenv
-import os
-import json
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from livekit import agents
-from livekit.plugins import (
-    openai,
-    noise_cancellation,
-    silero,
-    azure,
-)
-from livekit.plugins.turn_detector.multilingual import MultilingualModel
-
-# Load environment variables
-load_dotenv()
-
-# Azure configuration
-AZURE_OPENAI_DEPLOYMENT = os.getenv(
-    "AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini-realtime-preview")
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_API_VERSION = os.getenv(
-    "AZURE_OPENAI_API_VERSION", "2024-10-01-preview")
-
-# Configuration paths and constants
-AGENT_CONFIG_PATH = "./agent_config.json"
-TOOL_TIMEOUT = 300  # 5 minutes timeout for tool responses
-
-# MongoDB connection
-MONGODB_CONNECTION_STRING = os.getenv(
-    "MONGODB_CONNECTION_STRING", "mongodb://localhost:27017")
-client = AsyncIOMotorClient(MONGODB_CONNECTION_STRING)
-db = client.voice_assistant
-
-
-async def load_agent_config_from_db():
-    """
-    Load agent configuration from MongoDB.
-    """
-    cursor = db.agents.find().sort("order", 1)
-    agents = await cursor.to_list(None)
-
-    return agents
-
-
-@dataclass
-class UserData:
-    """
-    Stores user preferences and conversation state.
-
-    Attributes:
-        preferences: Dictionary storing all user preferences
-        current_state: Current state of the conversation
-        prev_state: Previous state of the conversation
-        agents: List of all agents from database
-        state_transitions: Dictionary storing state transitions
-    """
-    preferences: Dict[str, Any] = field(default_factory=dict)
-    prev_state: Optional[str] = None
-    agents: list = field(default_factory=list)
-    current_state: str = "Begrüßung"
-    state_transitions: Dict[str, str] = field(default_factory=dict)
-
-    def __init__(self, agents: list):
-        """
-        Initialize UserData with agents and set up state transitions.
-
-        Args:
-            agents: List of agent configurations from database
-        """
-        # Initialize all dataclass fields
-        self.preferences = {}
-        self.prev_state = None
-        self.agents = agents
-        self.state_transitions = {}
-
-        if agents:
-            self.current_state = agents[0]["chapter_id"]
-            self.state_transitions = self._create_state_transitions()
-
-    def _create_state_transitions(self) -> Dict[str, str]:
-        """Create state transitions based on agent order"""
-        transitions = {}
-        if not self.agents:
-            return transitions
-
-        # Create transitions based on order
-        for i in range(len(self.agents) - 1):
-            current_state = self.agents[i]["chapter_id"]
-            next_state = self.agents[i + 1]["chapter_id"]
-            transitions[current_state] = next_state
-
-        # Add transition from last state to final
-        if self.agents:
-            last_state = self.agents[-1]["chapter_id"]
-            transitions[last_state] = "final"
-
-        return transitions
-
-    def summarize(self) -> str:
-        """Returns a JSON string of all user preferences."""
-        return json.dumps(self.preferences)
-
-    def get_current_agent(self) -> Optional[Dict]:
-        """Get the current agent configuration"""
-        return next(
-            (agent for agent in self.agents if agent["chapter_id"]
-             == self.current_state),
-            None
-        )
-
-    def get_state_transitions(self) -> Dict[str, str]:
-        """Get state transitions"""
-        return self.state_transitions
-
 
 # Type alias for RunContext with UserData
 RunContext_T = RunContext[UserData]
+
+# FIXME to ENV var
+TOOL_TIMEOUT = 300  # 5 minutes timeout for tool responses
+
+# Create a named logger
+logger = logging.getLogger("DynamicAgent")
+logger.setLevel(logging.DEBUG)  # Set level for this logger
+
+# Create a handler (e.g., console output)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+
+# Attach the handler to your logger
+logger.addHandler(console_handler)
 
 
 @function_tool
@@ -153,7 +43,7 @@ async def console_logger(
         dict: Status and message
     """
     message = f"The bot logged: {text}."
-    print(message)
+    logger.info(message)
     return {"status": "success", "message": message}
 
 
@@ -193,7 +83,7 @@ async def show_notification(
             "result": result
         }
     except Exception as e:
-        print(f"Failed to show notification: {str(e)}")
+        logger.error(f"Failed to show notification: {str(e)}")
         return {
             "status": "error",
             "message": f"Failed to show notification: {str(e)}"
@@ -252,7 +142,7 @@ async def show_rating_event(
         }
         return response
     except Exception as e:
-        print(f"Failed to show rating event: {str(e)}")
+        logger.error(f"Failed to show rating event: {str(e)}")
         return {
             "status": "error",
             "message": f"Failed to show rating event: {str(e)}"
@@ -312,7 +202,7 @@ async def show_swipe_event(
         }
         return response
     except Exception as e:
-        print(f"Failed to show swipe event: {str(e)}")
+        logger.error(f"Failed to show swipe event: {str(e)}")
         return {
             "status": "error",
             "message": f"Failed to show swipe event: {str(e)}"
@@ -371,7 +261,7 @@ async def transfer_to_next_state(
                 }).encode()
             )
         except Exception as e:
-            print(f"Failed to send stage update: {str(e)}")
+            logger.error(f"Failed to send stage update: {str(e)}")
 
     return context.session.current_agent, f"Transferring to {next_state}."
 
@@ -397,6 +287,7 @@ class DynamicAgent(Agent):
                 show_notification
             ],
         )
+        logger.debug("__init__")
 
     async def on_enter(self) -> None:
         """
@@ -405,8 +296,11 @@ class DynamicAgent(Agent):
         Updates the agent's instructions based on the current state and
         prepares the chat context for the new state.
         """
+        logger.debug("on_enter")
         userdata: UserData = self.session.userdata
-        print(f"Userdata: {userdata}\n\n")
+        logger.debug("===================== USER_DATA =========================")
+        logger.debug(f"Userdata: {userdata}\n\n")
+        logger.debug("=========================================================")
         current_state = userdata.current_state
 
         # Get current agent configuration
@@ -453,12 +347,13 @@ class DynamicAgent(Agent):
                 end_requirement_prompt
             )
 
-            print("------------TRANSITION--------------\n")
-            print(f"Agent config: {agent_config}\n")
-            print(f"Event prompt: {event_prompt}\n")
-            print(f"End requirement prompt: {end_requirement_prompt}\n")
-            print(f"Full instructions: {full_instructions}\n")
-            print("--------------------------------\n\n")
+            logger.debug("===================== TRANSITION =========================")
+            logger.debug(f"Userdata: {userdata}")
+            logger.debug(f"Agent config: {agent_config}")
+            logger.debug(f"Event prompt: {event_prompt}")
+            logger.debug(f"End requirement prompt: {end_requirement_prompt}")
+            logger.debug(f"Full instructions: {full_instructions}")
+            logger.debug("==========================================================")
 
             await self.update_instructions(full_instructions)
 
@@ -496,109 +391,9 @@ class DynamicAgent(Agent):
                 ),
             )
 
-            print("------------CHAT CTX--------------\n")
-            print(f"Chat ctx: {chat_ctx.to_dict()}\n")
-            print("--------------------------------\n\n")
+            logger.debug("===================== CHAT CTX =========================")
+            logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
+            logger.debug("========================================================")
 
             await self.update_chat_ctx(chat_ctx)
             self.session.generate_reply(tool_choice="none")
-
-
-@dataclass
-class AzureAgent:
-    """Azure Agent for handling voice interactions"""
-
-    def __init__(self):
-        self.config = None
-        self.current_agent = None
-        self.agent_index = 0
-        self.initialized = False
-
-    async def initialize(self):
-        """Initialize the agent by loading configuration from MongoDB"""
-        if not self.initialized:
-            self.config = await load_agent_config_from_db()
-            if not self.config["agents"]:
-                raise ValueError("No agents found in the database")
-            self.current_agent = self.config["agents"][0]
-            self.initialized = True
-
-    async def get_next_agent(self) -> Optional[Dict]:
-        """Get the next agent in the sequence based on order"""
-        if not self.initialized:
-            await self.initialize()
-
-        if not self.current_agent:
-            return None
-
-        current_order = self.current_agent.get("order")
-        if current_order is None:
-            return None
-
-        # Find the next agent with the next order number
-        next_agent = next(
-            (agent for agent in self.config["agents"]
-             if agent["order"] == current_order + 1),
-            None
-        )
-
-        if next_agent:
-            self.current_agent = next_agent
-            return next_agent
-        return None
-
-    async def get_current_agent(self) -> Optional[Dict]:
-        """Get the current agent configuration"""
-        if not self.initialized:
-            await self.initialize()
-        return self.current_agent
-
-    async def reset(self):
-        """Reset the agent to the first configuration"""
-        if not self.initialized:
-            await self.initialize()
-        self.current_agent = self.config["agents"][0]
-        self.agent_index = 0
-
-
-async def entrypoint(ctx: agents.JobContext):
-    """
-    Entry point for the agent system.
-
-    Sets up the agent session with all necessary components and starts
-    the conversation in the greeting state.
-
-    Args:
-        ctx: The job context
-    """
-    # Load agents from database
-    agents = await load_agent_config_from_db()
-
-    userdata = UserData(agents=agents)
-    agent = DynamicAgent()
-
-    session = AgentSession[UserData](
-        userdata=userdata,
-        llm=openai.realtime.RealtimeModel.with_azure(
-            azure_deployment=AZURE_OPENAI_DEPLOYMENT,
-            azure_endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY,
-            api_version=AZURE_OPENAI_API_VERSION,
-        ),
-        vad=silero.VAD.load(),
-        turn_detection=MultilingualModel(),
-    )
-
-    await session.start(
-        room=ctx.room,
-        agent=agent,
-        room_input_options=RoomInputOptions(
-            noise_cancellation=noise_cancellation.BVC(),
-        ),
-    )
-
-    await ctx.connect()
-
-
-if __name__ == "__main__":
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))

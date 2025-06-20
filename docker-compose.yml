@@ -19,11 +19,12 @@ services:
   agent:
     build:
       context: ./agent
-      dockerfile: Dockerfile
-      command: ["python", "azure_agent.py", "dev"]
+    command: ["python", "agent_worker.py", "dev"]
     env_file: ./agent/.env
     environment:
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    volumes:
+      - ./agent:/home/appuser/app:z
     networks:
       - kisee
     depends_on:
