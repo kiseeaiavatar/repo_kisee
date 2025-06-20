@@ -4,12 +4,16 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from routes import admin
 import os
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
 
 app = FastAPI()
+logger = logging.getLogger('uvicorn.error')
+
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(" ")
+logger.info(f"ALLOWED_ORIGINS: {allowed_origins}")
 
 # Configure CORS
 app.add_middleware(
@@ -22,7 +26,10 @@ app.add_middleware(
 
 
 python_env = os.getenv("PYTHON_ENV", "development") # or staging/production
+logger.info(f"PYTHON_ENV: {python_env}")
+
 if (python_env not in ["development", "staging", "production"]):
+    logger.info(f"Unknown PYTHON_ENV: {python_env}. Using 'development'")
     python_env = "development"
 
 
