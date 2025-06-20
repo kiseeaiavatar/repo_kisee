@@ -95,9 +95,3 @@ The services will be available at:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
 - Admin Dashboard: http://localhost:3000/admin
-
-## Environment Variables
-
-Required environment variables:
-
-- `
