@@ -20,15 +20,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+python_env = os.getenv("PYTHON_ENV", "development") # or staging/production
+if (python_env not in ["development", "staging", "production"]):
+    python_env = "development"
+
+
 # MongoDB connection
-
-
 @app.on_event("startup")
 async def startup_db_client():
     mongodb_connection_string = os.getenv(
         "MONGODB_CONNECTION_STRING", "mongodb://localhost:27017")
     app.mongodb = AsyncIOMotorClient(mongodb_connection_string)
-    app.mongodb_db = app.mongodb.voice_assistant
+    app.mongodb_db = app.mongodb["voice_assistant_" + python_env]
     app.mongodb_agents = app.mongodb_db.agents
 
     # Create index on order field
