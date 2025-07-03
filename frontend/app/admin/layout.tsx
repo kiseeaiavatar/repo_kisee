@@ -1,15 +1,13 @@
-import "@livekit/components-styles";
 import { Metadata } from "next";
-import { Public_Sans } from "next/font/google";
-import "./globals.css";
+import { DM_Sans } from "next/font/google";
 
-const publicSans400 = Public_Sans({
+const font = DM_Sans({
   weight: "400",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Voice Assistant",
+  title: "your wAI - Admin",
 };
 
 export default function RootLayout({
@@ -18,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full ${publicSans400.className}`}>
+    <html lang="en" className={`h-full ${font.className}`}>
       <body className="h-full">{children}</body>
     </html>
   );
