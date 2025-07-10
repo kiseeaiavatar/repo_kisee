@@ -25,10 +25,22 @@ function ProcessItem({
   const bg = done ? "bg-green-500" : "bg-primary-300";
   const checkmark = done ? "check-circle-filled" : "check-circle";
   return (
-    <div className="flex align-center">
-      <Image src={`/icon-${checkmark}.svg`} alt="icon check circle" width={32} height={32} />
-      <div className={`${bg} rounded-3xl align-center flex-1 ml-2 p-2 pr-4 flex align-center`}>
-        <Image src={`/icon-${icon}.svg`} alt={`icon ${icon}`} width={32} height={32} />
+    <div className="flex items-center">
+      <Image
+        src={`/icon-${checkmark}.svg`}
+        alt="icon check circle"
+        width={32}
+        height={32}
+        style={{ width: "32px", height: "32px" }}
+      />
+      <div className={`${bg} rounded-3xl items-center flex-1 ml-2 p-2 pr-4 flex align-center`}>
+        <Image
+          src={`/icon-${icon}.svg`}
+          alt={`icon ${icon}`}
+          width={32}
+          height={32}
+          style={{ width: "32px", height: "32px" }}
+        />
         <div className="flex-1 ml-1">
           {desc && (
             <>
