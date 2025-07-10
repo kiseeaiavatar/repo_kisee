@@ -1,8 +1,7 @@
-"use client";
+import { App } from "@/components/Conversation";
+import { Variant } from "@/lib/variants";
 
-import { SecondaryButton } from "@/components/Button";
-import Image from "next/image";
-import { useState } from "react";
-import { MouseEventHandler } from "react";
-
-export default function Conversation() {}
+export default async function Conversation({ params }: { params: Promise<{ variant: Variant }> }) {
+  const { variant } = await params;
+  return <App variant={variant} />;
+}

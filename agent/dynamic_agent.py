@@ -287,7 +287,7 @@ class DynamicAgent(Agent):
                 show_notification
             ],
         )
-        logger.debug("__init__")
+        # logger.debug("__init__")
 
     async def on_enter(self) -> None:
         """
@@ -296,11 +296,10 @@ class DynamicAgent(Agent):
         Updates the agent's instructions based on the current state and
         prepares the chat context for the new state.
         """
-        logger.debug("on_enter")
         userdata: UserData = self.session.userdata
-        logger.debug("===================== USER_DATA =========================")
-        logger.debug(f"Userdata: {userdata}\n\n")
-        logger.debug("=========================================================")
+        # logger.debug("===================== USER_DATA =========================")
+        # logger.debug(f"Userdata: {userdata}\n\n")
+        # logger.debug("=========================================================")
         current_state = userdata.current_state
 
         # Get current agent configuration
@@ -347,13 +346,13 @@ class DynamicAgent(Agent):
                 end_requirement_prompt
             )
 
-            logger.debug("===================== TRANSITION =========================")
-            logger.debug(f"Userdata: {userdata}")
-            logger.debug(f"Agent config: {agent_config}")
-            logger.debug(f"Event prompt: {event_prompt}")
-            logger.debug(f"End requirement prompt: {end_requirement_prompt}")
-            logger.debug(f"Full instructions: {full_instructions}")
-            logger.debug("==========================================================")
+            # logger.debug("===================== TRANSITION =========================")
+            # logger.debug(f"Userdata: {userdata}")
+            # logger.debug(f"Agent config: {agent_config}")
+            # logger.debug(f"Event prompt: {event_prompt}")
+            # logger.debug(f"End requirement prompt: {end_requirement_prompt}")
+            # logger.debug(f"Full instructions: {full_instructions}")
+            # logger.debug("==========================================================")
 
             await self.update_instructions(full_instructions)
 
@@ -391,9 +390,9 @@ class DynamicAgent(Agent):
                 ),
             )
 
-            logger.debug("===================== CHAT CTX =========================")
-            logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
-            logger.debug("========================================================")
+            # logger.debug("===================== CHAT CTX =========================")
+            # logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
+            # logger.debug("========================================================")
 
             await self.update_chat_ctx(chat_ctx)
             self.session.generate_reply(tool_choice="none")

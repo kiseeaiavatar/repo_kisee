@@ -5,9 +5,10 @@ from dotenv import load_dotenv
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
+import json
 
 from livekit import agents
-from livekit.agents import AgentSession, Agent, RoomInputOptions
+from livekit.agents import AgentSession, Agent, RoomInputOptions, RoomOutputOptions
 from livekit.plugins import (
     openai,
     noise_cancellation,
@@ -75,6 +76,10 @@ async def entrypoint(ctx: agents.JobContext):
         ctx: The job context
     """
 
+    metadata = json.loads(ctx.job.metadata)
+    user_id = metadata["user_id"]
+    logger.debug(f"user_id: {user_id}")
+
     # Load agents from database
     agents = await load_agent_config_from_db()
 
@@ -92,7 +97,7 @@ async def entrypoint(ctx: agents.JobContext):
     )
 
     logger.debug("===================== CTX =========================")
-    logger.debug(f"context:: {ctx}")
+    logger.debug(f"context: {ctx}")
     logger.debug("===================================================")
 
     await session.start(
@@ -104,6 +109,9 @@ async def entrypoint(ctx: agents.JobContext):
             # - For telephony applications, use `BVCTelephony` for best results
             noise_cancellation=noise_cancellation.BVC(),
         ),
+        room_output_options=RoomOutputOptions(
+            audio_enabled=False # disable audio output
+        )
     )
 
     await ctx.connect()
@@ -124,4 +132,4 @@ if __name__ == "__main__":
     logger.info(f"LIVEKIT_API_KEY: {LIVEKIT_API_KEY}")
     logger.info("===================================================")
 
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))
+    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint, agent_name="kisee-agent"))
