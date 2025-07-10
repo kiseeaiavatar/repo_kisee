@@ -21,7 +21,13 @@ export default function AvatarSelect({ onDone }: { onDone?: MouseEventHandler })
         className={`bg-green-500 p-5 rounded-3xl cursor-pointer border-2 ${variant == idx ? "border-green-800" : "border-transparent"} hover:border-green-800`}
         onClick={() => selectAvatarVariant(idx)}
       >
-        <Image src={`/${img}`} alt={`Avatar - Variant ${idx}`} width={200} height={200} />
+        <Image
+          src={`/${img}`}
+          alt={`Avatar - Variant ${idx}`}
+          width={200}
+          height={200}
+          style={{ width: "200px", height: "200px" }}
+        />
       </div>
     );
   });

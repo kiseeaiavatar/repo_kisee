@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/Button";
 import { Variant } from "@/lib/variants";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { useState } from "react";
 import AvatarSelect from "./avatar-select";
 
@@ -12,8 +12,15 @@ enum StartState {
   Done,
 }
 
-export default function Start({ variant }: { variant: Variant }) {
-  const [myState, setMyState] = useState(StartState.Avatar);
+interface IntroProps {
+  onDone?: () => void;
+  variant: Variant;
+}
+
+export default function Intro({ onDone, variant }: IntroProps) {
+  const [myState, setMyState] = useState(
+    variant == "avatar" ? StartState.Avatar : StartState.Start
+  );
 
   function next() {
     switch (myState) {
@@ -22,6 +29,7 @@ export default function Start({ variant }: { variant: Variant }) {
         break;
       case StartState.Start:
         setMyState(StartState.Done);
+        onDone?.();
         break;
       case StartState.Done:
         // dead end
@@ -32,12 +40,11 @@ export default function Start({ variant }: { variant: Variant }) {
   }
 
   function render() {
-    console.log("render", myState);
     switch (myState) {
       case StartState.Avatar:
         return <AvatarSelect onDone={next} />;
       case StartState.Start:
-        return <Confirm variant={variant} />;
+        return <Confirm onDone={next} />;
       case StartState.Done:
         // dead end
         return;
@@ -47,15 +54,26 @@ export default function Start({ variant }: { variant: Variant }) {
   }
 
   return (
-    <div className="m-auto p-8 bg-secondary-500">
-      <div className="p-8 text-center">{render()}</div>
+    <div className="flex h-full bg-secondary-500">
+      <div className="absolute top-4 left-4">
+        <Image
+          src="/your-wai-logo-dark.svg"
+          alt="Your wAI Logo"
+          width={170}
+          height={80}
+          style={{ width: "170px", height: "80px" }}
+        />
+      </div>
+      <div className="m-auto p-8 text-center">
+        <div className="p-8">{render()}</div>
+      </div>
     </div>
   );
 }
 
-function Confirm({ variant }: { variant: Variant }) {
+function Confirm({ onDone }: { onDone: () => void }) {
   return (
-    <Button kind="secondary" href={`/${variant}/conversation`}>
+    <Button kind="secondary" onClick={onDone}>
       Beratung starten
     </Button>
   );

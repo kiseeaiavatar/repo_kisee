@@ -77,8 +77,8 @@ async def entrypoint(ctx: agents.JobContext):
     """
 
     metadata = json.loads(ctx.job.metadata)
-    user_id = metadata["user_id"]
-    logger.debug(f"user_id: {user_id}")
+    variant = metadata["variant"]
+    isAvatar = variant == "avatar"
 
     # Load agents from database
     agents = await load_agent_config_from_db()
@@ -110,7 +110,7 @@ async def entrypoint(ctx: agents.JobContext):
             noise_cancellation=noise_cancellation.BVC(),
         ),
         room_output_options=RoomOutputOptions(
-            audio_enabled=False # disable audio output
+            audio_enabled=isAvatar # disable audio output if chat variant
         )
     )
 

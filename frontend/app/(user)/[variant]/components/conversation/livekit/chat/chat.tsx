@@ -1,10 +1,10 @@
-import { ChatEntry } from "@/components/livekit/chat/chat-entry";
-import { ChatInput } from "@/components/livekit/chat/chat-input";
-import { ChatMessageView } from "@/components/livekit/chat/chat-message-view";
 import useChatAndTranscription from "@/hooks/useChatAndTranscription";
 import { cn } from "@/lib/utils";
 import { type ReceivedChatMessage, useRemoteParticipants } from "@livekit/components-react";
 import React from "react";
+import { ChatEntry } from "./chat-entry";
+import { ChatInput } from "./chat-input";
+import { ChatMessageView } from "./chat-message-view";
 
 export function Chat() {
   const { messages, send } = useChatAndTranscription();

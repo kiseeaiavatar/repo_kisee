@@ -1,8 +1,13 @@
 import { Button } from "@/components/Button";
+import { DisconnectButton } from "@livekit/components-react";
 import Image from "next/image";
 import ProcessOverview from "./process-overview";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onCancel?: () => void;
+}
+
+export default function Sidebar({ onCancel }: SidebarProps) {
   return (
     <div className="bg-primary-400 rounded-r-3xl p-4 flex flex-col justify-between h-full">
       <div className="flex-none">
@@ -13,7 +18,9 @@ export default function Sidebar() {
         <span className="font-normal">So weit bist du schon!</span>
         <ProcessOverview />
       </div>
-      <Button kind="primary">Abbrechen</Button>
+      <Button kind="primary" onClick={onCancel}>
+        Abbrechen
+      </Button>
     </div>
   );
 }

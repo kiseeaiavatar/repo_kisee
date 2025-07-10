@@ -1,6 +1,5 @@
 "use client";
 
-import { Chat } from "@/components/livekit/chat/chat";
 import { useDebugMode } from "@/hooks/useDebug";
 import { Variant } from "@/lib/variants";
 import {
@@ -11,6 +10,8 @@ import {
 } from "@livekit/components-react";
 import { motion } from "motion/react";
 import React, { useEffect } from "react";
+import Avatar from "./avatar";
+import { Chat } from "./livekit/chat/chat";
 
 function isAgentAvailable(agentState: AgentState) {
   return agentState == "listening" || agentState == "thinking" || agentState == "speaking";
@@ -71,8 +72,11 @@ export const SessionView = ({
 
   return (
     <main ref={ref} inert={disabled} className="w-full">
-      <div className="h-full flex flex-col px-24 py-4 justify-center">{isChat && <Chat />}</div>
-      <div className="bg-background fixed right-0 bottom-0 z-50 px-3 pt-2 pb-3 md:px-12 md:pb-12">
+      <div className="h-full flex flex-col px-24 py-4 justify-center">
+        {isChat && <Chat />}
+        {!isChat && <Avatar />}
+      </div>
+      {/* <div className="bg-background fixed right-0 bottom-0 z-50 px-3 pt-2 pb-3 md:px-12 md:pb-12">
         <motion.div
           key="control-bar"
           initial={{ opacity: 0, translateY: "100%" }}
@@ -83,10 +87,9 @@ export const SessionView = ({
           transition={{ duration: 0.3, delay: sessionStarted ? 0.5 : 0, ease: "easeOut" }}
         >
           <div className="relative z-10 mx-auto w-full max-w-2xl">
-            <VoiceAssistantControlBar controls={{ leave: true }} />
           </div>
         </motion.div>
-      </div>
+      </div> */}
     </main>
   );
 };

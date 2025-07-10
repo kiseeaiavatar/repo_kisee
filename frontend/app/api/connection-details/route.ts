@@ -1,6 +1,7 @@
+import { ALL_VARIANTS, Variant } from "@/lib/variants";
 import { RoomAgentDispatch, RoomConfiguration } from "@livekit/protocol";
 import { AccessToken, type AccessTokenOptions, type VideoGrant } from "livekit-server-sdk";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // NOTE: you are expected to define the following environment variables in `.env.local`:
 const API_KEY = process.env.LIVEKIT_API_KEY;
@@ -17,7 +18,11 @@ export type ConnectionDetails = {
   participantToken: string;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const variantParam = request.nextUrl.searchParams.get("variant");
+  const variant = ALL_VARIANTS.find((v) => v == variantParam);
+  if (!variant) return new NextResponse("bad variant given", { status: 400 });
+
   try {
     if (LIVEKIT_URL === undefined) {
       throw new Error("LIVEKIT_URL is not defined");
@@ -34,7 +39,8 @@ export async function GET() {
     const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
     const participantToken = await createParticipantToken(
       { identity: participantIdentity },
-      roomName
+      roomName,
+      variant
     );
 
     // Return connection details
@@ -56,7 +62,7 @@ export async function GET() {
   }
 }
 
-function createParticipantToken(userInfo: AccessTokenOptions, roomName: string) {
+function createParticipantToken(userInfo: AccessTokenOptions, roomName: string, variant: Variant) {
   const at = new AccessToken(API_KEY, API_SECRET, {
     ...userInfo,
     ttl: "15m",
@@ -73,7 +79,7 @@ function createParticipantToken(userInfo: AccessTokenOptions, roomName: string) 
     agents: [
       new RoomAgentDispatch({
         agentName: "kisee-agent",
-        metadata: '{"user_id": "12345"}',
+        metadata: `{"user_id": "12345", "variant":"${variant}"}`,
       }),
     ],
   });

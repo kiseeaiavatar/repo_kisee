@@ -1,7 +1,8 @@
 import { ConnectionDetails } from "@/app/api/connection-details/route";
+import { Variant } from "@/lib/variants";
 import { useCallback, useEffect, useState } from "react";
 
-export default function useConnectionDetails() {
+export default function useConnectionDetails(variant: Variant) {
   // Generate room connection details, including:
   //   - A random Room name
   //   - A random Participant name
@@ -19,6 +20,8 @@ export default function useConnectionDetails() {
       process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
       window.location.origin
     );
+    url.searchParams.set("variant", variant);
+
     fetch(url.toString())
       .then((res) => res.json())
       .then((data) => {
