@@ -1,5 +1,4 @@
 import { Button } from "@/components/Button";
-import { DisconnectButton } from "@livekit/components-react";
 import Image from "next/image";
 import ProcessOverview from "./process-overview";
 
