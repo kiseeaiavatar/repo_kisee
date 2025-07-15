@@ -11,7 +11,7 @@ export function Button({
   children,
 }: Readonly<{
   className?: string;
-  kind?: "primary" | "secondary";
+  kind?: "primary" | "secondary" | "icon";
   onClick?: MouseEventHandler;
   href?: string;
   children: React.ReactNode;
@@ -23,6 +23,10 @@ export function Button({
     cn = `${cnBase} bg-primary-500 text-white hover:bg-primary-300 hover:text-primary-500`;
   } else if (kind == "secondary") {
     cn = `${cnBase} bg-green-800 text-white hover:bg-green-500 hover:text-green-800`;
+  }
+
+  if (kind == "icon") {
+    cn = "bg-primary-300 rounded-[100%] p-3 hover:bg-primary-400";
   }
 
   if (href) {

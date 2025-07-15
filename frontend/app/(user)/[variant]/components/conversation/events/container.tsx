@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import React from "react";
-import RatingEvent from "./RatingEvent";
-import SwipeEvent from "./SwipeEvent";
+import RatingEvent from "./rating";
+import SwipeEvent from "./swipe";
 
 interface EventContainerProps {
   eventType: string;
@@ -10,6 +10,8 @@ interface EventContainerProps {
 }
 
 const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, onSubmit }) => {
+  console.log("eventInput", eventInput);
+
   const handleSwipeSubmit = (results: { [key: string]: boolean }[]) => {
     onSubmit({
       id: crypto.randomUUID(),
@@ -27,27 +29,20 @@ const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, 
   };
 
   return (
-    <Box sx={{ width: "100%", my: 2 }}>
+    <div className="widget-container px-3 py-4 text-center flex flex-col h-full">
+      {eventInput.chapter_id && (
+        <h1 className="event-heading text-2xl font-bold mb-4">{eventInput.chapter_id}</h1>
+      )}
       {eventInput.description && (
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          {eventInput.description}
-        </Typography>
+        <p className="event-desc text-xl mb-8">{eventInput.description}</p>
       )}
 
       {eventType === "swipe" && eventInput.items && (
-        <SwipeEvent
-          items={eventInput.items}
-          description={eventInput.description}
-          onSubmit={handleSwipeSubmit}
-        />
+        <SwipeEvent items={eventInput.items} onSubmit={handleSwipeSubmit} />
       )}
 
       {eventType === "rating" && eventInput.items && (
-        <RatingEvent
-          items={eventInput.items}
-          description={eventInput.description}
-          onSubmit={handleRatingSubmit}
-        />
+        <RatingEvent items={eventInput.items} onSubmit={handleRatingSubmit} />
       )}
 
       {!eventType ||
@@ -56,7 +51,7 @@ const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, 
             Invalid event type or missing input data
           </Typography>
         ))}
-    </Box>
+    </div>
   );
 };
 
