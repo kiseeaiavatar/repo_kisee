@@ -116,9 +116,9 @@ async def entrypoint(ctx: agents.JobContext):
 
     await ctx.connect()
 
-    await session.generate_reply(
-        instructions="Greet the user and offer your assistance."
-    )
+    # await session.generate_reply(
+    #     instructions="Greet the user and offer your assistance."
+    # )
 
 
 if __name__ == "__main__":
