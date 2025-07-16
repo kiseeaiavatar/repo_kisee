@@ -44,7 +44,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAgents();
-  }, []);
+  });
 
   const fetchAgents = async () => {
     try {
@@ -247,7 +247,7 @@ const AdminDashboard: React.FC = () => {
               rows={2}
               value={formData.end_requirement || ""}
               onChange={(e) => setFormData({ ...formData, end_requirement: e.target.value })}
-              helperText="End requirement is used to generate a prompt for the agent. It should fit into the following sentence: &quot;Sobald ... gehe weiter zum nächsten Kapitel&quot;"
+              helperText='End requirement is used to generate a prompt for the agent. It should fit into the following sentence: "Sobald ... gehe weiter zum nächsten Kapitel"'
             />
             <TextField
               fullWidth

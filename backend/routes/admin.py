@@ -38,7 +38,7 @@ async def update_agent(
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Agent not found")
-    updated_agent = await db.find_one({"chapter_id": chapter_id})
+    updated_agent = await db.find_one({"chapter_id": agent.chapter_id})
     return Agent(**updated_agent)
 
 

@@ -95,6 +95,7 @@ async def show_rating_event(
     context: RunContext_T,
     description: str,
     items: list[str],
+    chapter_id: str,
 ) -> dict:
     """
     Shows a rating event to the user where they can rate multiple items.
@@ -116,7 +117,8 @@ async def show_rating_event(
             payload=json.dumps({
                 "type": "rating",
                 "description": description,
-                "items": items
+                "items": items,
+                "chapter_id": chapter_id,
             }),
             response_timeout=TOOL_TIMEOUT
         )
@@ -154,6 +156,7 @@ async def show_swipe_event(
     context: RunContext_T,
     description: str,
     items: list[str],
+    chapter_id: str,
 ) -> dict:
     """
     Shows a swipe event to the user where they can swipe right(like)
@@ -176,7 +179,8 @@ async def show_swipe_event(
             payload=json.dumps({
                 "type": "swipe",
                 "description": description,
-                "items": items
+                "items": items,
+                "chapter_id": chapter_id,
             }),
             response_timeout=TOOL_TIMEOUT
         )
@@ -287,7 +291,7 @@ class DynamicAgent(Agent):
                 show_notification
             ],
         )
-        logger.debug("__init__")
+        # logger.debug("__init__")
 
     async def on_enter(self) -> None:
         """
@@ -296,22 +300,24 @@ class DynamicAgent(Agent):
         Updates the agent's instructions based on the current state and
         prepares the chat context for the new state.
         """
-        logger.debug("on_enter")
         userdata: UserData = self.session.userdata
-        logger.debug("===================== USER_DATA =========================")
-        logger.debug(f"Userdata: {userdata}\n\n")
-        logger.debug("=========================================================")
+        # logger.debug("===================== USER_DATA =========================")
+        # logger.debug(f"Userdata: {userdata}\n\n")
+        # logger.debug("=========================================================")
         current_state = userdata.current_state
 
         # Get current agent configuration
         agent_config = userdata.get_current_agent()
 
         if agent_config:
+            chapter_id = agent_config["chapter_id"]
+
             # Create event prompt addition if event configuration exists
             event_prompt = ""
             if "event_type" in agent_config and "event_input" in agent_config:
                 event_type = agent_config["event_type"]
                 event_input = agent_config["event_input"]
+                logger.debug(f"event_input: {event_input}")
 
                 if event_type == "rating":
                     event_prompt = (
@@ -319,6 +325,7 @@ class DynamicAgent(Agent):
                         f"Führe das show_rating_event Tool aus mit:\n"
                         f"- description: '{event_input['description']}'\n"
                         f"- items: {event_input['items']}\n"
+                        f"- chapter_id: {chapter_id}\n"
                         "Warte auf die Bewertungen, bevor du weitere Fragen stellst."  # noqa: E501
                         "Wenn du die Bewertungen erhalten hast, frage den User "  # noqa: E501
                         "etwas genauer nach seinen Präferenzen."
@@ -329,6 +336,7 @@ class DynamicAgent(Agent):
                         f"Führe das show_swipe_event Tool aus mit:\n"
                         f"- description: '{event_input['description']}'\n"
                         f"- items: {event_input['items']}\n"
+                        f"- chapter_id: {chapter_id}\n"
                         "Warte auf die Präferenzen, bevor du weitere Fragen stellst."  # noqa: E501
                         "Wenn du die Präferenzen erhalten hast, frage den User "  # noqa: E501
                         "etwas genauer nach seinen Präferenzen."
@@ -347,13 +355,13 @@ class DynamicAgent(Agent):
                 end_requirement_prompt
             )
 
-            logger.debug("===================== TRANSITION =========================")
-            logger.debug(f"Userdata: {userdata}")
-            logger.debug(f"Agent config: {agent_config}")
-            logger.debug(f"Event prompt: {event_prompt}")
-            logger.debug(f"End requirement prompt: {end_requirement_prompt}")
-            logger.debug(f"Full instructions: {full_instructions}")
-            logger.debug("==========================================================")
+            # logger.debug("===================== TRANSITION =========================")
+            # logger.debug(f"Userdata: {userdata}")
+            # logger.debug(f"Agent config: {agent_config}")
+            # logger.debug(f"Event prompt: {event_prompt}")
+            # logger.debug(f"End requirement prompt: {end_requirement_prompt}")
+            # logger.debug(f"Full instructions: {full_instructions}")
+            # logger.debug("==========================================================")
 
             await self.update_instructions(full_instructions)
 
@@ -391,9 +399,9 @@ class DynamicAgent(Agent):
                 ),
             )
 
-            logger.debug("===================== CHAT CTX =========================")
-            logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
-            logger.debug("========================================================")
+            # logger.debug("===================== CHAT CTX =========================")
+            # logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
+            # logger.debug("========================================================")
 
             await self.update_chat_ctx(chat_ctx)
             self.session.generate_reply(tool_choice="none")
