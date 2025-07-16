@@ -42,11 +42,7 @@ const AdminDashboard: React.FC = () => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
 
-  useEffect(() => {
-    fetchAgents();
-  });
-
-  const fetchAgents = async () => {
+  const fetchAgents = useCallback(async () => {
     try {
       const response = await fetch(`${backendUrl}/api/admin/agents`);
       const data = await response.json();
@@ -54,7 +50,11 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("Error fetching agents:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
 
   const handleOpenDialog = (agent?: Agent) => {
     if (agent) {
