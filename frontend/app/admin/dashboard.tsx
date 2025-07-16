@@ -44,7 +44,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAgents();
-  }, []);
+  });
 
   const fetchAgents = async () => {
     try {

@@ -1,4 +1,3 @@
-/* import { Button } from '@/components/ui/button'; */
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -18,8 +17,6 @@ export function ChatInput({ onSend, className, disabled, ...props }: ChatInputPr
     onSend?.(message);
     setMessage("");
   };
-
-  const isDisabled = disabled || message.trim().length === 0;
 
   useEffect(() => {
     if (disabled) return;

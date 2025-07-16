@@ -1,18 +1,28 @@
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import React from "react";
+import { EventInput } from "../conversation";
 import RatingEvent from "./rating";
 import SwipeEvent from "./swipe";
 
 interface EventContainerProps {
   eventType: string;
-  eventInput: any;
-  onSubmit: (results: any) => void;
+  eventInput: EventInput;
+  onSubmit: (result: EventResult) => void;
+}
+
+export interface EventResult {
+  id: string;
+  results: EventItemResult[];
+  created_at: string;
+}
+
+export interface EventItemResult {
+  item: string;
+  rating: number;
 }
 
 const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, onSubmit }) => {
-  console.log("eventInput", eventInput);
-
-  const handleSwipeSubmit = (results: { [key: string]: boolean }[]) => {
+  const handleSwipeSubmit = (results: EventItemResult[]) => {
     onSubmit({
       id: crypto.randomUUID(),
       results,
@@ -20,7 +30,7 @@ const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, 
     });
   };
 
-  const handleRatingSubmit = (results: { [key: string]: number }[]) => {
+  const handleRatingSubmit = (results: EventItemResult[]) => {
     onSubmit({
       id: crypto.randomUUID(),
       results,

@@ -5,8 +5,8 @@ import { Variant } from "@/lib/variants";
 import { RoomAudioRenderer, RoomContext, StartAudio } from "@livekit/components-react";
 import { Room, RoomEvent } from "livekit-client";
 import { motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
-import EventContainer from "./events/container";
+import { useEffect, useState } from "react";
+import EventContainer, { EventResult } from "./events/container";
 import { SessionView } from "./session-view";
 import Sidebar from "./sidebar";
 
@@ -16,22 +16,20 @@ interface ConversationProps {
   variant: Variant;
 }
 
-interface EventPayload {
+export interface EventInput {
   type?: string;
   items?: string[];
   description?: string;
-  [key: string]: any;
+  chapter_id?: string;
 }
 
 const MotionSessionView = motion.create(SessionView);
 
 export default function Conversation({ variant, onCancel }: ConversationProps) {
   const [room] = useState(() => new Room());
-  /*FIXME clean up sessionStarted  */
-  const [sessionStarted, setSessionStarted] = useState(true);
   const [eventData, setEventData] = useState<{
     type: string;
-    input: EventPayload;
+    input: EventInput;
   } | null>(null);
 
   const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(variant);
@@ -39,7 +37,6 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
 
   useEffect(() => {
     const onDisconnected = () => {
-      setSessionStarted(false);
       onCancel?.();
       refreshConnectionDetails();
     };
@@ -56,10 +53,10 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
       room.off(RoomEvent.Disconnected, onDisconnected);
       room.off(RoomEvent.MediaDevicesError, onMediaDevicesError);
     };
-  }, [room, refreshConnectionDetails]);
+  }, [room, refreshConnectionDetails, onCancel]);
 
   useEffect(() => {
-    if (sessionStarted && room.state === "disconnected" && connectionDetails) {
+    if (room.state === "disconnected" && connectionDetails) {
       Promise.all([
         room.localParticipant.setMicrophoneEnabled(!isChat, undefined),
         room.connect(connectionDetails.serverUrl, connectionDetails.participantToken),
@@ -68,24 +65,22 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
           // Register RPC method for showing notifications
           /* room.localParticipant.registerRpcMethod("showNotification", async (data) => { */
           room.registerRpcMethod("showNotification", async (data) => {
-            console.log("showNotification raw", data);
-
-            let payload: EventPayload;
+            let input: EventInput;
             try {
-              payload = typeof data.payload === "string" ? JSON.parse(data.payload) : data.payload;
+              input = typeof data.payload === "string" ? JSON.parse(data.payload) : data.payload;
             } catch {
-              payload = { description: data.payload };
+              input = { description: data.payload };
             }
-            console.log("showNotification", payload);
 
             setEventData({
-              type: payload.type || "notification",
-              input: payload,
+              type: input.type || "notification",
+              input,
             });
             return new Promise((resolve) => {
               // The promise will be resolved when the user submits the event
               window.addEventListener(
                 "eventSubmitted",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (event: any) => {
                   // Ensure we're sending a properly serialized object
                   const result =
@@ -108,16 +103,16 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
     return () => {
       if (room.state == "connected") room.disconnect();
     };
-  }, [room, sessionStarted, connectionDetails]);
+  }, [room, connectionDetails, isChat]);
 
   const handleCancel = () => {
     room.disconnect();
   };
 
-  const handleEventSubmit = (results: any) => {
+  const handleEventSubmit = (result: EventResult) => {
     setEventData(null);
     // Dispatch event to resolve the RPC promise
-    window.dispatchEvent(new CustomEvent("eventSubmitted", { detail: results }));
+    window.dispatchEvent(new CustomEvent("eventSubmitted", { detail: result }));
   };
 
   return (
@@ -129,18 +124,15 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
         <div className="center flex flex-1 justify-center">
           <RoomAudioRenderer muted={isChat} />
           <StartAudio label="Start Audio" />
-          {/* --- */}
           <MotionSessionView
             key="session-view"
             variant={variant}
-            disabled={!sessionStarted}
-            sessionStarted={sessionStarted}
             initial={{ opacity: 0 }}
-            animate={{ opacity: sessionStarted ? 1 : 0 }}
+            animate={{ opacity: 1 }}
             transition={{
               duration: 0.5,
               ease: "linear",
-              delay: sessionStarted ? 0.5 : 0,
+              delay: 0.5,
             }}
           />
         </div>

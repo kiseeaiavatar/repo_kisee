@@ -1,10 +1,11 @@
 import { Button } from "@/components/Button";
 import Image from "next/image";
 import React, { useState } from "react";
+import { EventItemResult } from "./container";
 
 interface SwipeEventProps {
   items: string[];
-  onSubmit: (results: { item: string; rating: number }[]) => void;
+  onSubmit: (results: EventItemResult[]) => void;
 }
 
 const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
@@ -40,7 +41,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="container flex flex-col flex-1">
       <p>
         {page + 1} / {items.length}
       </p>

@@ -1,9 +1,10 @@
 import { Button } from "@/components/Button";
 import React, { useState } from "react";
+import { EventItemResult } from "./container";
 
 interface RatingEventProps {
   items: string[];
-  onSubmit: (results: { item: string; rating: number }[]) => void;
+  onSubmit: (results: EventItemResult[]) => void;
 }
 
 const ITEMS_PER_PAGE = 6;
