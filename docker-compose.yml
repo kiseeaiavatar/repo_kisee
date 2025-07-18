@@ -8,6 +8,7 @@ services:
     environment:
       - UVICORN_RELOAD=true
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+      - PYTHON_ENV=local
     volumes:
       - ./backend:/app:z
     networks:
@@ -22,6 +23,7 @@ services:
     env_file: ./agent/.env
     environment:
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+      - PYTHON_ENV=local
     volumes:
       - ./agent:/home/appuser/app:z
     networks:

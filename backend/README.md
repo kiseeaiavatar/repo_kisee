@@ -171,9 +171,14 @@ Create a `.env` file in the backend directory with the following variables:
 
 ```
 MONGODB_CONNECTION_STRING=mongodb://localhost:27017
+PYTHON_ENV=development
 ```
 
 The `MONGODB_CONNECTION_STRING` is used to connect to your MongoDB instance. If you're using MongoDB Atlas or a different MongoDB host, replace the connection string with your specific connection string.
+
+We add `PYTHON_ENV` as a suffix to the MongoDB database name.
+This allows us to use the same MongoDB connection across development, staging and production deployments while still
+keeping data seperate.
 
 ## Troubleshooting
 

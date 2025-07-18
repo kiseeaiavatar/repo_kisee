@@ -28,7 +28,7 @@ app.add_middleware(
 python_env = os.getenv("PYTHON_ENV", "development") # or staging/production
 logger.info(f"PYTHON_ENV: {python_env}")
 
-if (python_env not in ["development", "staging", "production"]):
+if (python_env not in ["local", "development", "staging", "production"]):
     logger.info(f"Unknown PYTHON_ENV: {python_env}. Using 'development'")
     python_env = "development"
 

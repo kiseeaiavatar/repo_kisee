@@ -46,7 +46,14 @@ AZURE_OPENAI_TTS_API_KEY=your_tts_api_key
 AZURE_OPENAI_TTS_MODEL=your_tts_model
 AZURE_OPENAI_STT_API_KEY=your_stt_api_key
 AZURE_OPENAI_STT_MODEL=your_stt_model
+PYTHON_ENV=development
 ```
+
+We add `PYTHON_ENV` as a suffix to the MongoDB database name.
+This allows us to use the same MongoDB connection across development, staging and production deployments while still
+keeping data seperate.
+Additionally, the agent name is suffixed with the `PYTHON_ENV` value.
+This prevents that development agents are added to staging rooms.
 
 ## Usage
 

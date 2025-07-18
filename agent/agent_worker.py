@@ -18,6 +18,10 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 load_dotenv()
 
+# Create a named logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)  # Set level for this logger
+
 # Azure configuration
 AZURE_OPENAI_DEPLOYMENT = os.getenv(
     "AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini-realtime-preview")
@@ -26,7 +30,7 @@ AZURE_OPENAI_API_VERSION = os.getenv(
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 
 PYTHON_ENV = os.getenv("PYTHON_ENV", "development") # or staging/production
-if (PYTHON_ENV not in ["development", "staging", "production"]):
+if (PYTHON_ENV not in ["local", "development", "staging", "production"]):
     logger.info(f"Unknown PYTHON_ENV: {PYTHON_ENV}. Using 'development'")
     PYTHON_ENV = "development"
 
@@ -40,10 +44,6 @@ MONGODB_CONNECTION_STRING = os.getenv(
     "MONGODB_CONNECTION_STRING", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(MONGODB_CONNECTION_STRING)
 db = client["voice_assistant_" + PYTHON_ENV]
-
-# Create a named logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # Set level for this logger
 
 # Create a handler (e.g., console output)
 console_handler = logging.StreamHandler()
@@ -132,4 +132,4 @@ if __name__ == "__main__":
     logger.info(f"LIVEKIT_API_KEY: {LIVEKIT_API_KEY}")
     logger.info("===================================================")
 
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint, agent_name="kisee-agent"))
+    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint, agent_name=(f"kisee-agent-{PYTHON_ENV}")))
