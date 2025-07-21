@@ -104,6 +104,7 @@ async def show_rating_event(
         context: The run context with user data
         description: Description of what to rate
         items: List of items to rate
+        chapter_id: Name of the chapter
 
     Returns:
         dict: Status and results of the rating event
@@ -150,7 +151,6 @@ async def show_rating_event(
             "message": f"Failed to show rating event: {str(e)}"
         }
 
-
 @function_tool
 async def show_swipe_event(
     context: RunContext_T,
@@ -166,6 +166,7 @@ async def show_swipe_event(
         context: The run context with user data
         description: Description of what to swipe
         items: List of items to swipe
+        chapter_id: Name of the chapter
 
     Returns:
         dict: Status and results of the swipe event

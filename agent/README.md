@@ -51,7 +51,7 @@ PYTHON_ENV=development
 
 We add `PYTHON_ENV` as a suffix to the MongoDB database name.
 This allows us to use the same MongoDB connection across development, staging and production deployments while still
-keeping data seperate.
+keeping data separate.
 Additionally, the agent name is suffixed with the `PYTHON_ENV` value.
 This prevents that development agents are added to staging rooms.
 

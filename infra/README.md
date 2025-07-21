@@ -257,6 +257,13 @@ az containerapp update \
 
 ### UI
 
+
+NOTE: remember to init the `frontend/.env` file correctly.
+
+```shell
+cp frontend/.env.staging frontend/.env
+```
+
 1. Build and push your **UI container image** to your container registry instance with the following command.
 
 ```shell

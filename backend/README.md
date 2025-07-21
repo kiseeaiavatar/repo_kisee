@@ -178,7 +178,7 @@ The `MONGODB_CONNECTION_STRING` is used to connect to your MongoDB instance. If 
 
 We add `PYTHON_ENV` as a suffix to the MongoDB database name.
 This allows us to use the same MongoDB connection across development, staging and production deployments while still
-keeping data seperate.
+keeping data separate.
 
 ## Troubleshooting
 
