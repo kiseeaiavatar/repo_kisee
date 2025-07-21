@@ -104,6 +104,7 @@ async def show_rating_event(
         context: The run context with user data
         description: Description of what to rate
         items: List of items to rate
+        chapter_id: Name of the chapter
 
     Returns:
         dict: Status and results of the rating event
@@ -150,7 +151,6 @@ async def show_rating_event(
             "message": f"Failed to show rating event: {str(e)}"
         }
 
-
 @function_tool
 async def show_swipe_event(
     context: RunContext_T,
@@ -166,6 +166,7 @@ async def show_swipe_event(
         context: The run context with user data
         description: Description of what to swipe
         items: List of items to swipe
+        chapter_id: Name of the chapter
 
     Returns:
         dict: Status and results of the swipe event
@@ -210,6 +211,61 @@ async def show_swipe_event(
         return {
             "status": "error",
             "message": f"Failed to show swipe event: {str(e)}"
+        }
+
+@function_tool
+async def show_lifeline_event(
+    context: RunContext_T,
+    chapter_id: str,
+) -> dict:
+    """
+    Shows the lifeline event to the user where they can draw extraordinary life events on a line chart
+
+    Args:
+        context: The run context with user data
+        chapter_id: Name of the chapter
+
+    Returns:
+        dict: Status and results of the lifeline event
+    """
+    try:
+        room = get_job_context().room
+        participant_identity = next(iter(room.remote_participants))
+        result = await room.local_participant.perform_rpc(
+            destination_identity=participant_identity,
+            method="showNotification",
+            payload=json.dumps({
+                "type": "lifeline",
+                "chapter_id": chapter_id,
+            }),
+            response_timeout=TOOL_TIMEOUT
+        )
+
+        if isinstance(result, str):
+            try:
+                result = json.loads(result)
+            except json.JSONDecodeError:
+                result = {
+                    "error": "Failed to parse result",
+                    "raw_result": result
+                }
+
+        preferences = result.get("results", [])
+        # Store the preferences in the user's preferences
+        context.userdata.preferences[f"{context.userdata.current_state}_preferences"] = preferences  # noqa: E501
+
+        response = {
+            "status": "success",
+            "message": f"Lifeline event finished",
+            "results": preferences,
+            "raw_result": result
+        }
+        return response
+    except Exception as e:
+        logger.error(f"Failed to show lifeline event: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Failed to show lifeline event: {str(e)}"
         }
 
 
@@ -285,6 +341,7 @@ class DynamicAgent(Agent):
             tools=[
                 show_rating_event,
                 show_swipe_event,
+                show_lifeline_event,
                 update_name,
                 transfer_to_next_state,
                 console_logger,
@@ -341,6 +398,17 @@ class DynamicAgent(Agent):
                         "Wenn du die Präferenzen erhalten hast, frage den User "  # noqa: E501
                         "etwas genauer nach seinen Präferenzen."
                     )
+
+            if event_type == "lifeline":
+                event_prompt = (
+                    "\n\nWICHTIG: Starte sofort mit dem Lifeline-Event! "
+                    f"Führe das show_lifeline_event Tool aus mit:\n"
+                    f"- chapter_id: {chapter_id}\n"
+                    "Warte auf die Nutzereingaben, bevor du weitere Fragen stellst."  # noqa: E501
+                    "Wenn du die Nutzereingaben erhalten hast, befrage den User "  # noqa: E501
+                    "etwas genauer zu den Eingaben. Jede Eingabe enthält ein Alter (item) und die "
+                    "subjektiv empfundene Stärke eines Lebensereignisses."
+                )
 
             # Create end requirement prompt
             end_requirement_prompt = (

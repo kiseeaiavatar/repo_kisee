@@ -7,6 +7,7 @@ from datetime import datetime
 class EventType(str, Enum):
     SWIPE = "swipe"
     RATING = "rating"
+    LIFELINE= "lifeline"
 
 
 class EventInput(BaseModel):
