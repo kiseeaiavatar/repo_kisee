@@ -51,7 +51,7 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("Error fetching agents:", error);
     }
-  }, []);
+  }, [backendUrl]);
 
   useEffect(() => {
     fetchAgents();

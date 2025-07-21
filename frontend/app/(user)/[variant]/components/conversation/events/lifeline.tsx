@@ -17,7 +17,7 @@ ChartJS.register(LinearScale, PointElement, LineElement, dragDataPlugin);
 
 type Point = { x: number; y: number };
 
-const options: ChartOptions = {
+const options: ChartOptions<"line"> = {
   responsive: true,
   scales: {
     x: {
@@ -70,7 +70,7 @@ const options: ChartOptions = {
     },
   },
   onHover: (event, elements, _chart) => {
-    const target = event.native?.target;
+    const target = event.native?.target as HTMLElement;
     if (target) target.style.cursor = "pointer";
     // return early
     if (elements.length == 0) return;
@@ -92,10 +92,12 @@ const options: ChartOptions = {
       showTooltip: false,
       /* onDragStart: function (e, datasetIndex, index, value) {}, */
       onDrag: function (e) {
-        if (e.target) e.target.style.cursor = "grabbing";
+        const target = e.target as HTMLElement;
+        if (target) target.style.cursor = "grabbing";
       },
       onDragEnd: function (e) {
-        if (e.target) e.target.style.cursor = "pointer";
+        const target = e.target as HTMLElement;
+        if (target) target.style.cursor = "pointer";
       },
     },
   },
@@ -106,7 +108,7 @@ interface LifelineEventProps {
 }
 
 const LifelineEvent: React.FC<LifelineEventProps> = ({ onSubmit }) => {
-  const chartRef = useRef<ChartJS>();
+  const chartRef = useRef<ChartJS<"line", Point[], string>>(null);
   const [data, setData] = useState<Point[]>([
     { x: 0, y: 0 },
     { x: 100, y: 0 },
@@ -155,7 +157,7 @@ const LifelineEvent: React.FC<LifelineEventProps> = ({ onSubmit }) => {
       return;
     }
 
-    const pos = getRelativePosition(mouseEvent, chart);
+    const pos = getRelativePosition(mouseEvent, chart as ChartJS);
     const x = chart.scales.x.getValueForPixel(pos.x);
     const y = chart.scales.y.getValueForPixel(pos.y);
 
