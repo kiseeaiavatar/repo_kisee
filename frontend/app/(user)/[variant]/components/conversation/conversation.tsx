@@ -1,6 +1,7 @@
 "use client";
 
 import useConnectionDetails from "@/hooks/useConnectionDetails";
+import { EventType } from "@/lib/types";
 import { Variant } from "@/lib/variants";
 import { RoomAudioRenderer, RoomContext, StartAudio } from "@livekit/components-react";
 import { Room, RoomEvent } from "livekit-client";
@@ -17,7 +18,7 @@ interface ConversationProps {
 }
 
 export interface EventInput {
-  type?: string;
+  type?: EventType;
   items?: string[];
   description?: string;
   chapter_id?: string;
@@ -28,7 +29,7 @@ const MotionSessionView = motion.create(SessionView);
 export default function Conversation({ variant, onCancel }: ConversationProps) {
   const [room] = useState(() => new Room());
   const [eventData, setEventData] = useState<{
-    type: string;
+    type: EventType;
     input: EventInput;
   } | null>(null);
 
@@ -73,7 +74,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
             }
 
             setEventData({
-              type: input.type || "notification",
+              type: input.type as EventType,
               input,
             });
             return new Promise((resolve) => {

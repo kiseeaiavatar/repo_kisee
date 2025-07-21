@@ -1,11 +1,12 @@
-import { Typography } from "@mui/material";
+import { EventType } from "@/lib/types";
 import React from "react";
 import { EventInput } from "../conversation";
+import LifelineEvent from "./lifeline";
 import RatingEvent from "./rating";
 import SwipeEvent from "./swipe";
 
 interface EventContainerProps {
-  eventType: string;
+  eventType: EventType;
   eventInput: EventInput;
   onSubmit: (result: EventResult) => void;
 }
@@ -21,16 +22,28 @@ export interface EventItemResult {
   rating: number;
 }
 
-const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, onSubmit }) => {
-  const handleSwipeSubmit = (results: EventItemResult[]) => {
-    onSubmit({
-      id: crypto.randomUUID(),
-      results,
-      created_at: new Date().toISOString(),
-    });
-  };
+const getEvent = (
+  eventType: EventType,
+  eventInput: EventInput,
+  onSubmit: (results: EventItemResult[]) => void
+) => {
+  switch (eventType) {
+    case "swipe":
+      if (!eventInput.items) return <p className="text-red">Missing input data</p>;
+      return <SwipeEvent items={eventInput.items} onSubmit={onSubmit} />;
+    case "rating":
+      if (!eventInput.items) return <p className="text-red">Missing input data</p>;
+      return <RatingEvent items={eventInput.items} onSubmit={onSubmit} />;
+    case "lifeline":
+      return <LifelineEvent onSubmit={onSubmit} />;
+    default:
+      const _exhaustiveCheck: never = eventType;
+      return <p className="text-red">Unknown event type</p>;
+  }
+};
 
-  const handleRatingSubmit = (results: EventItemResult[]) => {
+const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, onSubmit }) => {
+  const handleEventSubmit = (results: EventItemResult[]) => {
     onSubmit({
       id: crypto.randomUUID(),
       results,
@@ -46,21 +59,7 @@ const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, 
       {eventInput.description && (
         <p className="event-desc text-xl mb-8">{eventInput.description}</p>
       )}
-
-      {eventType === "swipe" && eventInput.items && (
-        <SwipeEvent items={eventInput.items} onSubmit={handleSwipeSubmit} />
-      )}
-
-      {eventType === "rating" && eventInput.items && (
-        <RatingEvent items={eventInput.items} onSubmit={handleRatingSubmit} />
-      )}
-
-      {!eventType ||
-        (!eventInput.items && (
-          <Typography variant="body1" color="error">
-            Invalid event type or missing input data
-          </Typography>
-        ))}
+      {getEvent(eventType, eventInput, handleEventSubmit)}
     </div>
   );
 };

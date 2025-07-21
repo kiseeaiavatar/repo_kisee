@@ -1,3 +1,4 @@
+import { EventType } from "@/lib/types";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -30,7 +31,7 @@ interface Agent {
   user_instruction: string;
   end_requirement: string;
   order: number;
-  event_type?: "swipe" | "rating";
+  event_type?: EventType;
   event_input?: EventInput;
 }
 
@@ -255,7 +256,7 @@ const AdminDashboard: React.FC = () => {
               select
               value={formData.event_type || ""}
               onChange={(e) =>
-                setFormData({ ...formData, event_type: e.target.value as "swipe" | "rating" })
+                setFormData({ ...formData, event_type: e.target.value as EventType })
               }
               SelectProps={{
                 native: true,
@@ -264,8 +265,9 @@ const AdminDashboard: React.FC = () => {
               <option value="">None</option>
               <option value="swipe">Swipe</option>
               <option value="rating">Rating</option>
+              <option value="lifeline">Lifeline</option>
             </TextField>
-            {formData.event_type && (
+            {formData.event_type && formData.event_type != "lifeline" && (
               <>
                 <TextField
                   fullWidth
