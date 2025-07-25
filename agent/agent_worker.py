@@ -94,11 +94,18 @@ async def entrypoint(ctx: agents.JobContext):
         ),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
+        # allow_interruptions=False # cant disable interruptions when using realtime model
     )
 
     logger.debug("===================== CTX =========================")
     logger.debug(f"context: {ctx}")
     logger.debug("===================================================")
+
+
+    await ctx.connect()
+
+    # wait for the first participant to arrive
+    await ctx.wait_for_participant()
 
     await session.start(
         room=ctx.room,
@@ -113,8 +120,6 @@ async def entrypoint(ctx: agents.JobContext):
             audio_enabled=isAvatar # disable audio output if chat variant
         )
     )
-
-    await ctx.connect()
 
     # await session.generate_reply(
     #     instructions="Greet the user and offer your assistance."

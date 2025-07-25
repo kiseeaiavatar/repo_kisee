@@ -4,7 +4,7 @@ import useConnectionDetails from "@/hooks/useConnectionDetails";
 import { EventType } from "@/lib/types";
 import { Variant } from "@/lib/variants";
 import { RoomAudioRenderer, RoomContext, StartAudio } from "@livekit/components-react";
-import { Room, RoomEvent } from "livekit-client";
+import { Room, RoomEvent, RpcInvocationData } from "livekit-client";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import EventContainer, { EventResult } from "./events/container";
@@ -65,7 +65,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
         .then(() => {
           // Register RPC method for showing notifications
           /* room.localParticipant.registerRpcMethod("showNotification", async (data) => { */
-          room.registerRpcMethod("showNotification", async (data) => {
+          room.registerRpcMethod("showNotification", async (data: RpcInvocationData) => {
             let input: EventInput;
             try {
               input = typeof data.payload === "string" ? JSON.parse(data.payload) : data.payload;

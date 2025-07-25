@@ -26,267 +26,7 @@ console_handler.setLevel(logging.DEBUG)
 # Attach the handler to your logger
 logger.addHandler(console_handler)
 
-
-@function_tool
-async def console_logger(
-    context: RunContext,
-    text: str,
-) -> dict:
-    """
-    Logs a message to the console.
-
-    Args:
-        context: The run context
-        text: The message to log
-
-    Returns:
-        dict: Status and message
-    """
-    message = f"The bot logged: {text}."
-    logger.info(message)
-    return {"status": "success", "message": message}
-
-
-@function_tool
-async def show_notification(
-    context: RunContext,
-    text: str,
-) -> dict:
-    """
-    Shows a notification to the user via a Material UI Snackbar.
-
-    Args:
-        context: The run context
-        text: The notification text
-
-    Returns:
-        dict: Status and result of the notification
-    """
-    try:
-        room = get_job_context().room
-        participant_identity = next(iter(room.remote_participants))
-        result = await room.local_participant.perform_rpc(
-            destination_identity=participant_identity,
-            method="showNotification",
-            payload=text
-        )
-
-        if isinstance(result, str):
-            try:
-                result = json.loads(result)
-            except json.JSONDecodeError:
-                result = {"message": result}
-
-        return {
-            "status": "success",
-            "message": f"Notification shown: {text}",
-            "result": result
-        }
-    except Exception as e:
-        logger.error(f"Failed to show notification: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to show notification: {str(e)}"
-        }
-
-
-@function_tool
-async def show_rating_event(
-    context: RunContext_T,
-    description: str,
-    items: list[str],
-    chapter_id: str,
-) -> dict:
-    """
-    Shows a rating event to the user where they can rate multiple items.
-
-    Args:
-        context: The run context with user data
-        description: Description of what to rate
-        items: List of items to rate
-        chapter_id: Name of the chapter
-
-    Returns:
-        dict: Status and results of the rating event
-    """
-    try:
-        room = get_job_context().room
-        participant_identity = next(iter(room.remote_participants))
-        result = await room.local_participant.perform_rpc(
-            destination_identity=participant_identity,
-            method="showNotification",
-            payload=json.dumps({
-                "type": "rating",
-                "description": description,
-                "items": items,
-                "chapter_id": chapter_id,
-            }),
-            response_timeout=TOOL_TIMEOUT
-        )
-
-        if isinstance(result, str):
-            try:
-                result = json.loads(result)
-            except json.JSONDecodeError:
-                result = {
-                    "error": "Failed to parse result",
-                    "raw_result": result
-                }
-
-        ratings = result.get("results", [])
-        # Store the ratings in the user's preferences
-        context.userdata.preferences[f"{context.userdata.current_state}_ratings"] = ratings  # noqa: E501
-
-        response = {
-            "status": "success",
-            "message": f"Rating event finished for {len(items)} items",
-            "results": ratings,
-            "raw_result": result
-        }
-        return response
-    except Exception as e:
-        logger.error(f"Failed to show rating event: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to show rating event: {str(e)}"
-        }
-
-@function_tool
-async def show_swipe_event(
-    context: RunContext_T,
-    description: str,
-    items: list[str],
-    chapter_id: str,
-) -> dict:
-    """
-    Shows a swipe event to the user where they can swipe right(like)
-    or left(dislike).
-
-    Args:
-        context: The run context with user data
-        description: Description of what to swipe
-        items: List of items to swipe
-        chapter_id: Name of the chapter
-
-    Returns:
-        dict: Status and results of the swipe event
-    """
-    try:
-        room = get_job_context().room
-        participant_identity = next(iter(room.remote_participants))
-        result = await room.local_participant.perform_rpc(
-            destination_identity=participant_identity,
-            method="showNotification",
-            payload=json.dumps({
-                "type": "swipe",
-                "description": description,
-                "items": items,
-                "chapter_id": chapter_id,
-            }),
-            response_timeout=TOOL_TIMEOUT
-        )
-
-        if isinstance(result, str):
-            try:
-                result = json.loads(result)
-            except json.JSONDecodeError:
-                result = {
-                    "error": "Failed to parse result",
-                    "raw_result": result
-                }
-
-        preferences = result.get("results", [])
-        # Store the preferences in the user's preferences
-        context.userdata.preferences[f"{context.userdata.current_state}_preferences"] = preferences  # noqa: E501
-
-        response = {
-            "status": "success",
-            "message": f"Swipe event finished for {len(items)} items",
-            "results": preferences,
-            "raw_result": result
-        }
-        return response
-    except Exception as e:
-        logger.error(f"Failed to show swipe event: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to show swipe event: {str(e)}"
-        }
-
-@function_tool
-async def show_lifeline_event(
-    context: RunContext_T,
-    chapter_id: str,
-) -> dict:
-    """
-    Shows the lifeline event to the user where they can draw extraordinary life events on a line chart
-
-    Args:
-        context: The run context with user data
-        chapter_id: Name of the chapter
-
-    Returns:
-        dict: Status and results of the lifeline event
-    """
-    try:
-        room = get_job_context().room
-        participant_identity = next(iter(room.remote_participants))
-        result = await room.local_participant.perform_rpc(
-            destination_identity=participant_identity,
-            method="showNotification",
-            payload=json.dumps({
-                "type": "lifeline",
-                "chapter_id": chapter_id,
-            }),
-            response_timeout=TOOL_TIMEOUT
-        )
-
-        if isinstance(result, str):
-            try:
-                result = json.loads(result)
-            except json.JSONDecodeError:
-                result = {
-                    "error": "Failed to parse result",
-                    "raw_result": result
-                }
-
-        preferences = result.get("results", [])
-        # Store the preferences in the user's preferences
-        context.userdata.preferences[f"{context.userdata.current_state}_preferences"] = preferences  # noqa: E501
-
-        response = {
-            "status": "success",
-            "message": f"Lifeline event finished",
-            "results": preferences,
-            "raw_result": result
-        }
-        return response
-    except Exception as e:
-        logger.error(f"Failed to show lifeline event: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to show lifeline event: {str(e)}"
-        }
-
-
-@function_tool
-async def update_name(
-    name: str,
-    context: RunContext_T,
-) -> str:
-    """
-    Updates the user's name in their preferences.
-
-    Args:
-        name: The user's name
-        context: The run context with user data
-
-    Returns:
-        str: Confirmation message
-    """
-    context.userdata.preferences["name"] = name
-    return f"The name is updated to {name}"
-
+logging.getLogger("pymongo").setLevel(logging.INFO)
 
 @function_tool
 async def transfer_to_next_state(
@@ -339,13 +79,7 @@ class DynamicAgent(Agent):
         super().__init__(
             instructions="",  # Will be updated based on state
             tools=[
-                show_rating_event,
-                show_swipe_event,
-                show_lifeline_event,
-                update_name,
                 transfer_to_next_state,
-                console_logger,
-                show_notification
             ],
         )
         # logger.debug("__init__")
@@ -358,58 +92,18 @@ class DynamicAgent(Agent):
         prepares the chat context for the new state.
         """
         userdata: UserData = self.session.userdata
-        # logger.debug("===================== USER_DATA =========================")
-        # logger.debug(f"Userdata: {userdata}\n\n")
-        # logger.debug("=========================================================")
+        logger.debug("=== USER_DATA ===")
+        logger.debug(f"Userdata: {userdata}\n\n")
+        logger.debug("=================")
         current_state = userdata.current_state
 
         # Get current agent configuration
         agent_config = userdata.get_current_agent()
+        logger.debug("=== AGENT_CONFIG ===")
+        logger.debug(f"Agent config: {agent_config}\n\n")
+        logger.debug("====================")
 
         if agent_config:
-            chapter_id = agent_config["chapter_id"]
-
-            # Create event prompt addition if event configuration exists
-            event_prompt = ""
-            if "event_type" in agent_config and "event_input" in agent_config:
-                event_type = agent_config["event_type"]
-                event_input = agent_config["event_input"]
-                logger.debug(f"event_input: {event_input}")
-
-                if event_type == "rating":
-                    event_prompt = (
-                        "\n\nWICHTIG: Starte sofort mit dem Rating-Event! "
-                        f"Führe das show_rating_event Tool aus mit:\n"
-                        f"- description: '{event_input['description']}'\n"
-                        f"- items: {event_input['items']}\n"
-                        f"- chapter_id: {chapter_id}\n"
-                        "Warte auf die Bewertungen, bevor du weitere Fragen stellst."  # noqa: E501
-                        "Wenn du die Bewertungen erhalten hast, frage den User "  # noqa: E501
-                        "etwas genauer nach seinen Präferenzen."
-                    )
-                elif event_type == "swipe":
-                    event_prompt = (
-                        "\n\nWICHTIG: Starte sofort mit dem Swipe-Event! "
-                        f"Führe das show_swipe_event Tool aus mit:\n"
-                        f"- description: '{event_input['description']}'\n"
-                        f"- items: {event_input['items']}\n"
-                        f"- chapter_id: {chapter_id}\n"
-                        "Warte auf die Präferenzen, bevor du weitere Fragen stellst."  # noqa: E501
-                        "Wenn du die Präferenzen erhalten hast, frage den User "  # noqa: E501
-                        "etwas genauer nach seinen Präferenzen."
-                    )
-
-            if event_type == "lifeline":
-                event_prompt = (
-                    "\n\nWICHTIG: Starte sofort mit dem Lifeline-Event! "
-                    f"Führe das show_lifeline_event Tool aus mit:\n"
-                    f"- chapter_id: {chapter_id}\n"
-                    "Warte auf die Nutzereingaben, bevor du weitere Fragen stellst."  # noqa: E501
-                    "Wenn du die Nutzereingaben erhalten hast, befrage den User "  # noqa: E501
-                    "etwas genauer zu den Eingaben. Jede Eingabe enthält ein Alter (item) und die "
-                    "subjektiv empfundene Stärke eines Lebensereignisses."
-                )
-
             # Create end requirement prompt
             end_requirement_prompt = (
                 f"\n\nWICHTIG: Sobald {agent_config['end_requirement']}, "
@@ -419,17 +113,16 @@ class DynamicAgent(Agent):
             # Update instructions based on current state
             full_instructions = (
                 agent_config["user_instruction"] +
-                event_prompt +
                 end_requirement_prompt
             )
 
-            # logger.debug("===================== TRANSITION =========================")
-            # logger.debug(f"Userdata: {userdata}")
-            # logger.debug(f"Agent config: {agent_config}")
+            logger.debug("=== TRANSITION ===")
+            logger.debug(f"Userdata: {userdata}")
+            logger.debug(f"Agent config: {agent_config}")
             # logger.debug(f"Event prompt: {event_prompt}")
             # logger.debug(f"End requirement prompt: {end_requirement_prompt}")
             # logger.debug(f"Full instructions: {full_instructions}")
-            # logger.debug("==========================================================")
+            logger.debug("==================")
 
             await self.update_instructions(full_instructions)
 
@@ -456,20 +149,141 @@ class DynamicAgent(Agent):
                     f"Aktuelle Nutzerdaten sind {userdata.summarize()}\n"
                     "Benutze keine Emojis oder Sonderzeichen. "
                     "Bilde klare kurze Antworten.\n"
-                    "Wenn du an einen anderen Zustand übertragen wirst, "
-                    "dann sage etwas passendes in die Richtung wie "
-                    "'Okay, das ist spannend, "
-                    "sollen wir mit dem nächsten Thema weitermachen?' "
-                    "(gerne variiere die Antwort)"
-                    "Wenn der User nicht zustimmt, dann frage nochmal nach."
-                    "Wenn der User zustimmt, führe das "
-                    "transfer_to_next_state Tool aus."
+                    # "Wenn du an einen anderen Zustand übertragen wirst, "
+                    # "dann sage etwas passendes in die Richtung wie "
+                    # "'Okay, das ist spannend, "
+                    # "sollen wir mit dem nächsten Thema weitermachen?' "
+                    # "(gerne variiere die Antwort)"
+                    # "Wenn der User nicht zustimmt, dann frage nochmal nach."
+                    # "Wenn der User zustimmt, führe das "
+                    # "transfer_to_next_state Tool aus."
                 ),
             )
 
-            # logger.debug("===================== CHAT CTX =========================")
-            # logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
-            # logger.debug("========================================================")
+            logger.debug("=== CHAT CTX ===")
+            logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
+            logger.debug("================")
 
             await self.update_chat_ctx(chat_ctx)
-            self.session.generate_reply(tool_choice="none")
+            await self.session.generate_reply(tool_choice="none")
+
+            await self.show_event(agent_config)
+
+
+    async def show_event(self, agent_config: Agent) -> None:
+        logger.debug("show_event")
+        if "event_type" in agent_config:
+            event_type = agent_config["event_type"]
+            logger.debug(f"show_event type: {event_type}")
+            event_result = ""
+            try:
+                if event_type == "lifeline":
+                    event_result = await show_lifeline_event(agent_config)
+                    await self.session.generate_reply(
+                        tool_choice="none",
+                        user_input=f"lifeline results: {event_result}",
+                        instructions= ("Ignoriere die Ereignisse bei 0 und 100."
+                                       "Befrage den User etwas genauer zu den Eingaben."
+                                       "Jede Eingabe enthält ein Alter (item) und die "
+                                       "subjektiv empfundene Stärke eines Lebensereignisses."
+                                       "Runde das Alter immer ab."
+                                       )
+                    )
+                elif event_type == "rating":
+                    event_result = await show_rating_event(agent_config)
+                    await self.session.generate_reply(
+                        tool_choice="none",
+                        user_input=f"rating results: {event_result}",
+                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
+                                       "Wähle die drei am höchsten bewerteten Elemente aus."
+                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
+                                       )
+                    )
+                elif event_type == "swipe":
+                    event_result = await show_swipe_event(agent_config)
+                    await self.session.generate_reply(
+                        tool_choice="none",
+                        user_input=f"swipe results: {event_result}",
+                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
+                                       "Wähle die drei am höchsten bewerteten Elemente aus."
+                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
+                                       )
+                    )
+
+                # FIXME what if there are multiple rating events? make sure preferences are not overriden
+                self.session.userdata.preferences[f"{self.session.userdata.current_state}_preferences"] = event_result
+
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to show {event_type} event due to RPC issue: {str(e)}")
+            except Exception as e:
+                logger.error(f"Failed to show {event_type} event: {str(e)}")
+
+
+
+async def show_rating_event(
+    agent_config: dict,
+) -> dict:
+    logger.debug("show_rating_event")
+    chapter_id = agent_config["chapter_id"]
+
+    if "event_input" not in agent_config:
+        logger.error("event_input missing in agent_config")
+        return
+
+    event_input = agent_config["event_input"]
+    payload={
+        "type": "rating",
+        "description": event_input["description"],
+        "items": event_input["items"],
+        "chapter_id": chapter_id,
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def show_swipe_event(
+    agent_config: dict,
+) -> dict:
+    logger.debug("show_swipe_event")
+    chapter_id = agent_config["chapter_id"]
+
+    if "event_input" not in agent_config:
+        logger.error("event_input missing in agent_config")
+        return
+
+    event_input = agent_config["event_input"]
+    payload={
+        "type": "swipe",
+        "description": event_input["description"],
+        "items": event_input["items"],
+        "chapter_id": chapter_id,
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def show_lifeline_event(
+    agent_config: dict,
+) -> dict:
+    logger.debug("show_lifeline_event")
+    chapter_id = agent_config["chapter_id"]
+    payload={
+        "type": "lifeline",
+        "chapter_id": chapter_id,
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def perform_rpc_with_payload(payload: dict):
+    room = get_job_context().room
+    participant_identity = next(iter(room.remote_participants))
+
+    result = await room.local_participant.perform_rpc(
+        destination_identity=participant_identity,
+        method="showNotification",
+        payload=json.dumps(payload),
+        response_timeout=TOOL_TIMEOUT
+    )
+
+    if isinstance(result, str):
+        result = json.loads(result)
+
+    return result.get("results", [])
