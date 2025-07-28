@@ -82,7 +82,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
         <div className="rounded-3xl flex-1 flex flex-col">
           <div className="rounded-t-3xl bg-center bg-cover flex-1 relative">{itemImage()}</div>
           <div
-            className="px-4 pb-6 pt-10 rounded-b-3xl mt-[-50px] z-1"
+            className="px-4 pb-6 pt-10 rounded-b-3xl mt-[-50px] z-10"
             style={{
               backgroundImage: "linear-gradient(to bottom, transparent, white 30px)",
             }}
