@@ -1,7 +1,6 @@
 "use client";
 
 import CloseIcon from "@mui/icons-material/Close";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import Image from "next/image";
@@ -41,11 +40,10 @@ export default function JobGallery({ images }: JobGalleryProps) {
       <div className="grid grid-cols-4 gap-4 grid-rows-[200px_minmax(900px,1fr)_100px]">
         {images.map((img, i) => {
           return (
-            <div className="overflow-hidden relative cursor-pointer">
+            <div className="overflow-hidden relative cursor-pointer" key={i}>
               <Image
                 src={img}
                 alt={img}
-                key={i}
                 fill={true}
                 className="object-contain"
                 onClick={() => {
