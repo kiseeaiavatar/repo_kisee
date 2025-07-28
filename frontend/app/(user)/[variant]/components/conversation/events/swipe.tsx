@@ -32,6 +32,39 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
     }
   };
 
+  const parseItem = () => {
+    const str = items[page];
+
+    // Match all [tag] and <tag>
+    const tagRegex = /(\[([^\]]+)\])|(<([^>]+)>)/g;
+
+    let match, img, skill;
+    while ((match = tagRegex.exec(str)) !== null) {
+      if (match[2]) img = match[2];
+      if (match[4]) skill = match[4];
+    }
+
+    // Remove tags from the string to get remaining text
+    const text = str.replace(tagRegex, "").trim();
+
+    return {
+      img,
+      skill,
+      text,
+    };
+  };
+
+  const itemImage = () => {
+    const parsedItem = parseItem();
+    if (!parsedItem.img) return;
+    return <Image src={parsedItem.img} alt={parsedItem.img} fill={true} className="object-cover" />;
+  };
+
+  const itemText = () => {
+    const parsedItem = parseItem();
+    return parsedItem.text;
+  };
+
   const handleLike = () => {
     next(1);
   };
@@ -47,19 +80,14 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
       </p>
       <div className="item flex flex-col mt-4 flex-1 w-1/2 mx-auto">
         <div className="rounded-3xl flex-1 flex flex-col">
+          <div className="rounded-t-3xl bg-center bg-cover flex-1 relative">{itemImage()}</div>
           <div
-            className="rounded-t-3xl bg-center bg-cover flex-1"
-            style={{
-              backgroundImage: `url(/beruf1.jpg)`,
-            }}
-          />
-          <div
-            className="px-4 pb-6 pt-10 rounded-b-3xl mt-[-50px]"
+            className="px-4 pb-6 pt-10 rounded-b-3xl mt-[-50px] z-1"
             style={{
               backgroundImage: "linear-gradient(to bottom, transparent, white 30px)",
             }}
           >
-            {items[page]}
+            {itemText()}
           </div>
         </div>
         <div className="flex justify-between mt-6">

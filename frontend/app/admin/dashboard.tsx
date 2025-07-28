@@ -298,7 +298,7 @@ const AdminDashboard: React.FC = () => {
                       },
                     })
                   }
-                  helperText="Enter each item on a new line. Press Enter to add a new item."
+                  helperText="Enter each item on a new line. Press Enter to add a new item. Add images or ESCO skills with '[img-url]' or '<skill-uuid>'"
                   inputProps={{
                     style: { whiteSpace: "pre-wrap" },
                   }}
