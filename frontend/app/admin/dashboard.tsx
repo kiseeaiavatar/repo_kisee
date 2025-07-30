@@ -27,6 +27,7 @@ interface EventInput {
 }
 
 interface Agent {
+  id: string;
   chapter_id: string;
   user_instruction: string;
   end_requirement: string;
@@ -79,7 +80,7 @@ const AdminDashboard: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const url = editingAgent
-        ? `${backendUrl}/api/admin/agents/${editingAgent.chapter_id}`
+        ? `${backendUrl}/api/admin/agents/${editingAgent.id}`
         : `${backendUrl}/api/admin/agents`;
       const method = editingAgent ? "PUT" : "POST";
 
@@ -100,9 +101,9 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleDelete = async (chapterId: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`${backendUrl}/api/admin/agents/${chapterId}`, {
+      const response = await fetch(`${backendUrl}/api/admin/agents/${id}`, {
         method: "DELETE",
       });
 
@@ -141,7 +142,7 @@ const AdminDashboard: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            agent_ids: updatedAgents.map((agent) => agent.chapter_id),
+            agent_ids: updatedAgents.map((agent) => agent.id),
           }),
         });
         setAgents(updatedAgents);
@@ -212,7 +213,7 @@ const AdminDashboard: React.FC = () => {
                     <IconButton onClick={() => handleOpenDialog(agent)} color="primary">
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(agent.chapter_id)} color="error">
+                    <IconButton onClick={() => handleDelete(agent.id)} color="error">
                       <DeleteIcon />
                     </IconButton>
                   </Box>
