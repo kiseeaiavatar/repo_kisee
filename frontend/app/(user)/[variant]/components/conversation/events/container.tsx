@@ -36,6 +36,8 @@ const getEvent = (
       return <RatingEvent items={eventInput.items} onSubmit={onSubmit} />;
     case "lifeline":
       return <LifelineEvent onSubmit={onSubmit} />;
+    case "none":
+      return <p className="text-orange">None event type</p>;
     default:
       const _exhaustiveCheck: never = eventType;
       return <p className="text-red">Unknown event type</p>;

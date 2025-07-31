@@ -17,6 +17,10 @@ class EventType(str, Enum):
     LIFELINE= "lifeline"
 
 
+class InstructionType(str, Enum):
+    DIRECT_MESSAGE = "dm"
+
+
 class EventInput(BaseModel):
     description: str
     items: List[str]
@@ -29,6 +33,8 @@ class Agent(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     chapter_id: str
     user_instruction: str
+    user_instruction_type: Optional[InstructionType] = None
+    agent_instructions: Optional[str] = None
     end_requirement: Optional[str] = None
     order: int
     event_type: Optional[EventType] = None

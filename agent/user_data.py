@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
+from livekit.agents import Agent
 
 @dataclass
 class UserData:
@@ -17,10 +18,15 @@ class UserData:
     preferences: Dict[str, Any] = field(default_factory=dict)
     prev_state: Optional[str] = None
     agents: list = field(default_factory=list)
+    dynamic_agents: list[Agent] = field(default_factory=list)
+    prev_agent: Optional[Agent] = None
+    current_agent_idx: int = 0
+    age: int = 25
+
     current_state: str = "Begrüßung"
     state_transitions: Dict[str, str] = field(default_factory=dict)
 
-    def __init__(self, agents: list):
+    def __init__(self, agents: list, dynamic_agents: list):
         """
         Initialize UserData with agents and set up state transitions.
 
@@ -31,11 +37,13 @@ class UserData:
         self.preferences = {}
         self.prev_state = None
         self.agents = agents
+        self.dynamic_agents = dynamic_agents
         self.state_transitions = {}
 
         if agents:
             self.current_state = agents[0]["chapter_id"]
             self.state_transitions = self._create_state_transitions()
+
 
     def _create_state_transitions(self) -> Dict[str, str]:
         """Create state transitions based on agent order"""

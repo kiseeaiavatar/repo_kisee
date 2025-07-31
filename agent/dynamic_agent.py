@@ -13,7 +13,7 @@ from livekit.agents import (
 RunContext_T = RunContext[UserData]
 
 # FIXME to ENV var
-TOOL_TIMEOUT = 300  # 5 minutes timeout for tool responses
+TOOL_TIMEOUT = 900  # 15 minutes timeout for tool responses
 
 # Create a named logger
 logger = logging.getLogger("DynamicAgent")
@@ -29,158 +29,162 @@ logger.addHandler(console_handler)
 logging.getLogger("pymongo").setLevel(logging.INFO)
 
 @function_tool
-async def transfer_to_next_state(
+async def transfer_to_next_agent(
     context: RunContext_T,
 ) -> tuple[Agent, str]:
     """
-    Transfers to the next state based on the current state.
-
-    Args:
-        context: The run context with user data
-
-    Returns:
-        tuple: The current agent and a transition message
+    Transfers to the next agent once the end requirement is reached.
     """
     userdata = context.userdata
-    current_state = userdata.current_state
+    current_agent = context.session.current_agent
+    current_agent_idx = userdata.current_agent_idx
+    next_agent_idx = current_agent_idx + 1
+    print(f"next id {next_agent_idx}, len {len(userdata.dynamic_agents)}")
+    if next_agent_idx >= len(userdata.dynamic_agents):
+        await context.session.generate_reply(tool_choice="none", instructions="Informiere den Nutzer, dass wir am Ende der Beratung angelangt sind")
+        return "Wir sind fertig für heute"
 
-    # Get next state from transitions
-    state_transitions = userdata.get_state_transitions()
-    next_state = state_transitions.get(current_state, "final")
-    userdata.prev_state = current_state
-    userdata.current_state = next_state
+    next_agent = userdata.dynamic_agents[next_agent_idx]
+    userdata.prev_agent = current_agent
+    userdata.current_agent_idx = next_agent_idx
 
-    # Send stage update to frontend
-    room = get_job_context().room
-    if room:
-        try:
-            await room.local_participant.publish_data(
-                json.dumps({
-                    "type": "stage_update",
-                    "stage": next_state
-                }).encode()
-            )
-        except Exception as e:
-            logger.error(f"Failed to send stage update: {str(e)}")
+    # return next_agent, f"Transferring to agent {next_agent_idx}"
+    return next_agent
 
-    return context.session.current_agent, f"Transferring to {next_state}."
-
+COMMON_INSTRUCTIONS = (
+    "Du bist ein digitaler Berufsberater (Avatar) und führst Sprachinteraktionen mit Nutzer:innen durch, die sich beruflich orientieren möchten. "
+    "Deine Aufgabe ist es, sie freundlich, empathisch und klar bei ihrer Berufsfindung zu unterstützen. "
+    "\n\n"
+    "Hilf den Nutzer:innen dabei, ihre Interessen, Stärken und realistische Berufs- oder Ausbildungswege zu erkennen. "
+    "Unterstütze sie bei der Entscheidungsfindung – ob Studium, Ausbildung oder beruflicher Einstieg – und fördere ihre Motivation, "
+    "selbst aktiv zu werden. Gib gezielte Informationen zu Berufsbildern, Voraussetzungen und Möglichkeiten, wenn es passt. "
+    "\n\n"
+    "Die Zielgruppe umfasst: "
+    "Schüler:innen ab Klasse 8, die Orientierung suchen. "
+    "Studierende, die über einen Fachwechsel oder Abbruch nachdenken. "
+    "Menschen, die eine Ausbildung beginnen möchten. "
+    "Berufseinsteiger:innen oder Wiedereinsteiger:innen nach z. B. Krankheit oder Elternzeit. "
+    "Personen in beruflicher Neuorientierung. "
+    "Menschen mit Migrationshintergrund, die in den Arbeitsmarkt einsteigen möchten. "
+    "\n\n"
+    "Sprich in einem freundlichen, unterstützenden und respektvollen Ton. "
+    "Sei empathisch – höre zu, frage nach, reagiere sensibel auf Unsicherheiten. "
+    "Passe deine Sprache dem Alter und Bildungsniveau der Person an. "
+    "Bleibe neutral – bewerte keine Entscheidungen und dränge niemanden in eine Richtung. "
+    "Motiviere – zeige Chancen auf, betone Stärken und ermutige zur Selbstreflexion. "
+    "Sprich klar und verständlich – vermeide Fachbegriffe oder erkläre sie bei Bedarf. "
+    "Führe ein echtes Gespräch – stelle offene Fragen, höre aktiv zu und reagiere individuell. "
+    "\n\n"
+    "Wenn du den Nutzer zu einem anderen Agent weiterleitest sei still und sage **NICHT** 'Ich leite dich nun weiter'."
+)
 
 class DynamicAgent(Agent):
-    """
-    A dynamic agent that handles all conversation states.
+    config: dict
 
-    The agent updates its instructions based on the current state and
-    manages the transition between states.
-    """
-
-    def __init__(self) -> None:
+    def __init__(self, config: dict) -> None:
         """Initialize the agent with all available tools."""
+        print(f"init dyn agent {config['chapter_id']}")
+        instructions = (
+            COMMON_INSTRUCTIONS
+            + "\n\n"
+            + ( config["agent_instructions"] or "" )
+        )
+
+        if config["end_requirement"] and config["end_requirement"] != "SOFORT":
+            instructions += (
+                "\n\n Sobald "
+                + config["end_requirement"]
+                + " führe das transfer_to_next_agent Tool aus ohne es dem Nutzer mitzuteilen."
+            )
+        print(f"with agent instructions {instructions}")
+
         super().__init__(
-            instructions="",  # Will be updated based on state
+            instructions=instructions,
             tools=[
-                transfer_to_next_state,
+                transfer_to_next_agent,
             ],
         )
+        self.config =config
         # logger.debug("__init__")
 
     async def on_enter(self) -> None:
-        """
-        Called when entering a new state.
+        # agent_name = self.__class__.__name__
+        # logger.info(f"entering task {agent_name}")
+        agent_name = self.config["chapter_id"]
+        print(f"entering new agent {agent_name}")
+        print(f"agent instructions {self.instructions}")
 
-        Updates the agent's instructions based on the current state and
-        prepares the chat context for the new state.
-        """
         userdata: UserData = self.session.userdata
-        logger.debug("=== USER_DATA ===")
-        logger.debug(f"Userdata: {userdata}\n\n")
-        logger.debug("=================")
-        current_state = userdata.current_state
 
-        # Get current agent configuration
-        agent_config = userdata.get_current_agent()
-        logger.debug("=== AGENT_CONFIG ===")
-        logger.debug(f"Agent config: {agent_config}\n\n")
-        logger.debug("====================")
+        chat_ctx = self.chat_ctx.copy()
+        print(f"current_agent_idx: {userdata.current_agent_idx}")
 
-        if agent_config:
-            # Create end requirement prompt
-            end_requirement_prompt = (
-                f"\n\nWICHTIG: Sobald {agent_config['end_requirement']}, "
-                f"führe das transfer_to_next_state Tool aus."
-            )
+        # add the previous agent's chat history to the current agent
+        if isinstance(userdata.prev_agent, Agent):
+            print("add previous chat history")
+            print(f"prev chat ctx: {userdata.prev_agent.chat_ctx.to_dict()}")
+            truncated_chat_ctx = userdata.prev_agent.chat_ctx.copy(
+                exclude_instructions=True, # discard system/developer messages
+                exclude_function_call=False,
+            ).truncate(max_items=6)
+            existing_ids = {item.id for item in chat_ctx.items}
+            items_copy = [item for item in truncated_chat_ctx.items if item.id not in existing_ids]
+            chat_ctx.items.extend(items_copy)
+            print("chat ctx copied")
 
-            # Update instructions based on current state
-            full_instructions = (
-                agent_config["user_instruction"] +
-                end_requirement_prompt
-            )
-
-            logger.debug("=== TRANSITION ===")
-            logger.debug(f"Userdata: {userdata}")
-            logger.debug(f"Agent config: {agent_config}")
-            # logger.debug(f"Event prompt: {event_prompt}")
-            # logger.debug(f"End requirement prompt: {end_requirement_prompt}")
-            # logger.debug(f"Full instructions: {full_instructions}")
-            logger.debug("==================")
-
-            await self.update_instructions(full_instructions)
-
-            chat_ctx = self.chat_ctx.copy()
-
-            if userdata.prev_state:
-                truncated_chat_ctx = self.chat_ctx.copy(
-                    exclude_instructions=True,
-                    exclude_function_call=False
-                ).truncate(max_items=6)
-                existing_ids = {item.id for item in chat_ctx.items}
-                items_copy = [
-                    item for item in truncated_chat_ctx.items
-                    if item.id not in existing_ids
-                ]
-                chat_ctx.items.extend(items_copy)
-
-            chat_ctx.add_message(
-                role="system",
-                content=(
-                    "Du bist ein Assistent. Deine Aufgabe ist es die Nutzerin "
-                    "zu unterstützen. "
-                    f"Du bist im {current_state} Zustand. "
+        # add the user data as assistant message
+        print(f"userdata: {userdata.summarize()}")
+        chat_ctx.add_message(
+            role="system",  # role=system works for OpenAI's LLM and Realtime API
+            content=(
                     f"Aktuelle Nutzerdaten sind {userdata.summarize()}\n"
-                    "Benutze keine Emojis oder Sonderzeichen. "
-                    "Bilde klare kurze Antworten.\n"
-                    # "Wenn du an einen anderen Zustand übertragen wirst, "
-                    # "dann sage etwas passendes in die Richtung wie "
-                    # "'Okay, das ist spannend, "
-                    # "sollen wir mit dem nächsten Thema weitermachen?' "
-                    # "(gerne variiere die Antwort)"
-                    # "Wenn der User nicht zustimmt, dann frage nochmal nach."
-                    # "Wenn der User zustimmt, führe das "
-                    # "transfer_to_next_state Tool aus."
-                ),
-            )
+            ),
+        )
+        print(f"chat ctx: {chat_ctx.to_dict()}")
+        await self.update_chat_ctx(chat_ctx)
+        print("chat ctx updated")
 
-            logger.debug("=== CHAT CTX ===")
-            logger.debug(f"Chat ctx: {chat_ctx.to_dict()}")
-            logger.debug("================")
+        await self.session.say(
+            text=f"agent {agent_name}",
+            add_to_chat_ctx=False
+        )
 
-            await self.update_chat_ctx(chat_ctx)
-            await self.session.generate_reply(tool_choice="none")
+        user_instruction=self.config["user_instruction"]
+        if self.config["user_instruction_type"] == "dm":
+            print("say first message literally")
+            await self.session.say(user_instruction)
+        else:
+            if user_instruction:
+                instructions = (
+                    COMMON_INSTRUCTIONS
+                    + "\n\n"
+                    + ( self.config["agent_instructions"] or "" )
+                    + "\n\n"
+                    + ( self.config["user_instruction"] or "" )
+                )
+                print(f"generate first message: {instructions}")
+                await self.session.generate_reply(instructions=instructions)
+            else:
+                print(f"generate first message without additional instructions")
+                await self.session.generate_reply()
 
-            await self.show_event(agent_config)
+        print("msg generated")
+        await self.show_event(self.config)
+        print("event shown")
 
+        if self.config["end_requirement"] == "SOFORT":
+            print("goto next agent immediately")
+            self.session.update_agent(userdata.dynamic_agents[userdata.current_agent_idx + 1])
+            userdata.current_agent_idx += 1
 
     async def show_event(self, agent_config: Agent) -> None:
-        logger.debug("show_event")
         if "event_type" in agent_config:
             event_type = agent_config["event_type"]
-            logger.debug(f"show_event type: {event_type}")
             event_result = ""
             try:
                 if event_type == "lifeline":
                     event_result = await show_lifeline_event(agent_config)
                     await self.session.generate_reply(
-                        tool_choice="none",
                         user_input=f"lifeline results: {event_result}",
                         instructions= ("Ignoriere die Ereignisse bei 0 und 100."
                                        "Befrage den User etwas genauer zu den Eingaben."
@@ -189,36 +193,36 @@ class DynamicAgent(Agent):
                                        "Runde das Alter immer ab."
                                        )
                     )
+                    print(f"lifeline result {event_result}")
                 elif event_type == "rating":
                     event_result = await show_rating_event(agent_config)
                     await self.session.generate_reply(
-                        tool_choice="none",
                         user_input=f"rating results: {event_result}",
                         instructions= ("Ignoriere Ergebnisse mit Wert 0."
                                        "Wähle die drei am höchsten bewerteten Elemente aus."
                                        "Befrage den Nutzer etwas genauer zu diesen Elementen"
                                        )
                     )
+                    print(f"rating event result {event_result}")
                 elif event_type == "swipe":
                     event_result = await show_swipe_event(agent_config)
                     await self.session.generate_reply(
-                        tool_choice="none",
                         user_input=f"swipe results: {event_result}",
                         instructions= ("Ignoriere Ergebnisse mit Wert 0."
                                        "Wähle die drei am höchsten bewerteten Elemente aus."
                                        "Befrage den Nutzer etwas genauer zu diesen Elementen"
                                        )
                     )
+                    print(f"swipe event result {event_result}")
+                else:
+                    return
 
-                # FIXME what if there are multiple rating events? make sure preferences are not overriden
-                self.session.userdata.preferences[f"{self.session.userdata.current_state}_preferences"] = event_result
+                self.session.userdata.preferences[f"preferences_{self.session.userdata.current_agent_idx}_{event_type}"] = event_result
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to show {event_type} event due to RPC issue: {str(e)}")
             except Exception as e:
                 logger.error(f"Failed to show {event_type} event: {str(e)}")
-
-
 
 async def show_rating_event(
     agent_config: dict,
