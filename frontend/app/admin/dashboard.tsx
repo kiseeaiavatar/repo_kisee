@@ -242,7 +242,6 @@ const AdminDashboard: React.FC = () => {
               label="Topic"
               value={formData.chapter_id || ""}
               onChange={(e) => setFormData({ ...formData, chapter_id: e.target.value })}
-              helperText="Topic goes into context of agent, too. Like 'Gerade geht es um das Thema: <topic>'"
             />
             <TextField
               fullWidth
@@ -260,7 +259,7 @@ const AdminDashboard: React.FC = () => {
               rows={3}
               value={formData.user_instruction || ""}
               onChange={(e) => setFormData({ ...formData, user_instruction: e.target.value })}
-              helperText="Instructions for agent to generate first message. Select DM instruction type below to post the first message literally."
+              helperText="Additional instructions for agent to generate first message only. Select DM instruction type below to post the first message literally."
             />
 
             <TextField
@@ -289,7 +288,7 @@ const AdminDashboard: React.FC = () => {
               rows={2}
               value={formData.end_requirement || ""}
               onChange={(e) => setFormData({ ...formData, end_requirement: e.target.value })}
-              helperText='End requirement is used to generate a prompt for the agent. It should fit into the following sentence: "Sobald ... gehe weiter zum nächsten Kapitel". Use "SOFORT" to immediately go to next agent.'
+              helperText='It should fit into the following sentence: "Sobald ... gehe weiter zum nächsten Kapitel". Use "SOFORT" to immediately go to next agent.'
             />
             <TextField
               fullWidth

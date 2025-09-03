@@ -1,5 +1,6 @@
 # This is an example Dockerfile that builds a minimal container for running LK Agents
 # syntax=docker/dockerfile:1
+# TODO: multi stage setup https://pythonspeed.com/articles/multi-stage-docker-python/
 ARG PYTHON_VERSION=3.11.6
 FROM python:${PYTHON_VERSION}-slim
 
