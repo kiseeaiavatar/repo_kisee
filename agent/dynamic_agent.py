@@ -144,10 +144,10 @@ class DynamicAgent(Agent):
         await self.update_chat_ctx(chat_ctx)
         print("chat ctx updated")
 
-        await self.session.say(
-            text=f"agent {agent_name}",
-            add_to_chat_ctx=False
-        )
+        # await self.session.say(
+        #     text=f"agent {agent_name}",
+        #     add_to_chat_ctx=False
+        # )
 
         user_instruction=self.config["user_instruction"]
         if self.config["user_instruction_type"] == "dm":
