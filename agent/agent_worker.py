@@ -83,9 +83,14 @@ async def entrypoint(ctx: agents.JobContext):
     # Load agents from database
     agents = await load_agent_config_from_db()
 
-    userdata = UserData(agents=agents)
-    agent = DynamicAgent()
-    # session = AgentSession(
+    dynamic_agents = []
+    for i in range(len(agents)):
+        print(f"init dyn agent {i}: {agents[i]['chapter_id']}")
+        dynamic_agents.append(DynamicAgent(agents[i]))
+
+    # FIXME remove agents from userData
+    userdata = UserData(agents=agents, dynamic_agents=dynamic_agents)
+    agent = userdata.dynamic_agents[userdata.current_agent_idx]
     session = AgentSession[UserData](
         userdata=userdata,
         llm=openai.realtime.RealtimeModel.with_azure(
@@ -109,7 +114,7 @@ async def entrypoint(ctx: agents.JobContext):
 
     await session.start(
         room=ctx.room,
-        agent=DynamicAgent(),
+        agent=agent,
         room_input_options=RoomInputOptions(
             # LiveKit Cloud enhanced noise cancellation
             # - If self-hosting, omit this parameter
@@ -120,10 +125,6 @@ async def entrypoint(ctx: agents.JobContext):
             audio_enabled=isAvatar # disable audio output if chat variant
         )
     )
-
-    # await session.generate_reply(
-    #     instructions="Greet the user and offer your assistance."
-    # )
 
 
 if __name__ == "__main__":

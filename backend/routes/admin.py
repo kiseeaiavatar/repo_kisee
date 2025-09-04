@@ -33,6 +33,7 @@ async def update_agent(
 ):
     db = request.app.mongodb_agents
     agent.updated_at = datetime.now().isoformat()
+    print(f"agent dict: {agent.dict()}")
     result = await db.update_one(
         {"_id": ObjectId(id)},
         {"$set": agent.dict()}

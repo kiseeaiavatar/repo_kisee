@@ -58,7 +58,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
     const parsedItem = parseItem();
     if (!parsedItem.img) return;
 
-    let props = {
+    const props = {
       src: parsedItem.img,
       alt: parsedItem.img,
       fill: true,

@@ -1,4 +1,4 @@
-import { EventType } from "@/lib/types";
+import { EventType, UserInstructionType } from "@/lib/types";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -30,6 +30,8 @@ interface Agent {
   id: string;
   chapter_id: string;
   user_instruction: string;
+  user_instruction_type?: UserInstructionType;
+  agent_instructions: string;
   end_requirement: string;
   order: number;
   event_type?: EventType;
@@ -83,6 +85,13 @@ const AdminDashboard: React.FC = () => {
         ? `${backendUrl}/api/admin/agents/${editingAgent.id}`
         : `${backendUrl}/api/admin/agents`;
       const method = editingAgent ? "PUT" : "POST";
+
+      if (formData.user_instruction_type == "none") {
+        delete formData.user_instruction_type;
+      }
+      if (formData.event_type == "none") {
+        delete formData.event_type;
+      }
 
       const response = await fetch(url, {
         method,
@@ -230,18 +239,48 @@ const AdminDashboard: React.FC = () => {
           <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               fullWidth
-              label="Chapter ID"
+              label="Topic"
               value={formData.chapter_id || ""}
               onChange={(e) => setFormData({ ...formData, chapter_id: e.target.value })}
             />
             <TextField
               fullWidth
-              label="User Instruction"
+              label="Agent instructions"
+              multiline
+              rows={2}
+              value={formData.agent_instructions || ""}
+              onChange={(e) => setFormData({ ...formData, agent_instructions: e.target.value })}
+              helperText="General instruction used to initialize Agent"
+            />
+            <TextField
+              fullWidth
+              label="First Message Instruction"
               multiline
               rows={3}
               value={formData.user_instruction || ""}
               onChange={(e) => setFormData({ ...formData, user_instruction: e.target.value })}
+              helperText="Additional instructions for agent to generate first message only. Select DM instruction type below to post the first message literally."
             />
+
+            <TextField
+              fullWidth
+              label="Instruction Type"
+              select
+              value={formData.user_instruction_type || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  user_instruction_type: e.target.value as UserInstructionType,
+                })
+              }
+              SelectProps={{
+                native: true,
+              }}
+            >
+              <option value="none">None</option>
+              <option value="dm">Direct Message</option>
+            </TextField>
+
             <TextField
               fullWidth
               label="End Requirement"
@@ -249,7 +288,7 @@ const AdminDashboard: React.FC = () => {
               rows={2}
               value={formData.end_requirement || ""}
               onChange={(e) => setFormData({ ...formData, end_requirement: e.target.value })}
-              helperText='End requirement is used to generate a prompt for the agent. It should fit into the following sentence: "Sobald ... gehe weiter zum nächsten Kapitel"'
+              helperText='It should fit into the following sentence: "Sobald ... gehe weiter zum nächsten Kapitel". Use "SOFORT" to immediately go to next agent.'
             />
             <TextField
               fullWidth
@@ -263,7 +302,7 @@ const AdminDashboard: React.FC = () => {
                 native: true,
               }}
             >
-              <option value="">None</option>
+              <option value="none">None</option>
               <option value="swipe">Swipe</option>
               <option value="rating">Rating</option>
               <option value="lifeline">Lifeline</option>

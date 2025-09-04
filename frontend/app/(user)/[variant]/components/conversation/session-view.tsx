@@ -50,7 +50,7 @@ export const SessionView = ({ variant, ref }: React.ComponentProps<"div"> & Sess
         });
         room.disconnect();
       }
-    }, 10_000);
+    }, 30_000);
 
     return () => clearTimeout(timeout);
   }, [agentState, room]);
