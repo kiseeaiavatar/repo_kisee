@@ -150,6 +150,7 @@ az acr build \
 ```shell
 read -s livekit_key
 read -s livekit_secret
+read -s heygen_key
 ```
 
 3. Create your container app with the following command.
@@ -165,8 +166,8 @@ az containerapp create \
     --user-assigned $AZ_IDENTITY_ID \
     --registry-identity $AZ_IDENTITY_ID \
     --registry-server $AZ_REGISTRY_NAME.azurecr.io \
-    --secrets kisee-sm-secret-livekit-api-key=$livekit_key kisee-sm-secret-livekit-api-secret=$livekit_secret \
-    --env-vars LIVEKIT_URL="wss://kisee-pqr2w30e.livekit.cloud" LIVEKIT_API_KEY="secretref:kisee-sm-secret-livekit-api-key" LIVEKIT_API_SECRET="secretref:kisee-sm-secret-livekit-api-secret" \
+    --secrets kisee-sm-secret-livekit-api-key=$livekit_key kisee-sm-secret-livekit-api-secret=$livekit_secret kisee-sm-secret-heygen-api-key=$heygen_key \
+    --env-vars LIVEKIT_URL="wss://kisee-pqr2w30e.livekit.cloud" LIVEKIT_API_KEY="secretref:kisee-sm-secret-livekit-api-key" LIVEKIT_API_SECRET="secretref:kisee-sm-secret-livekit-api-secret" HEYGEN_API_KEY="secretref:kisee-sm-secret-heygen-api-key" \
     --query properties.configuration.ingress.fqdn
 ```
 

@@ -13,7 +13,7 @@ enum StartState {
 }
 
 interface IntroProps {
-  onDone?: () => void;
+  onDone?: ({ avatar }: { avatar: number | null }) => void;
   variant: Variant;
 }
 
@@ -21,6 +21,7 @@ export default function Intro({ onDone, variant }: IntroProps) {
   const [myState, setMyState] = useState(
     variant == "avatar" ? StartState.Avatar : StartState.Start
   );
+  const [avatar, setAvatar] = useState<number | null>(null);
 
   function next() {
     switch (myState) {
@@ -29,7 +30,7 @@ export default function Intro({ onDone, variant }: IntroProps) {
         break;
       case StartState.Start:
         setMyState(StartState.Done);
-        onDone?.();
+        onDone?.({ avatar });
         break;
       case StartState.Done:
         // dead end
@@ -39,10 +40,15 @@ export default function Intro({ onDone, variant }: IntroProps) {
     }
   }
 
+  function onAvatarSelect(avatarIdx: number) {
+    setAvatar(avatarIdx);
+    next();
+  }
+
   function render() {
     switch (myState) {
       case StartState.Avatar:
-        return <AvatarSelect onDone={next} />;
+        return <AvatarSelect onDone={onAvatarSelect} />;
       case StartState.Start:
         return <Confirm onDone={next} />;
       case StartState.Done:

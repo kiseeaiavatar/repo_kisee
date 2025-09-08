@@ -3,16 +3,15 @@
 import { Button } from "@/components/Button";
 import Image from "next/image";
 import { useState } from "react";
-import { MouseEventHandler } from "react";
 
-export default function AvatarSelect({ onDone }: { onDone?: MouseEventHandler }) {
+export default function AvatarSelect({ onDone }: { onDone: (idx: number) => void }) {
   const [variant, setVariant] = useState(0);
 
   function selectAvatarVariant(variant: number) {
     setVariant(variant);
   }
 
-  const variants = ["avatar-variant-1.svg", "avatar-variant-2.svg"];
+  const variants = ["avatar-variant-1.jpg", "avatar-variant-2.jpg"];
 
   const options = variants.map((img: string, idx: number) => {
     return (
@@ -40,7 +39,7 @@ export default function AvatarSelect({ onDone }: { onDone?: MouseEventHandler })
         Mit welchem Avatar möchtest du sprechen?
       </p>
       <div className="flex justify-evenly my-16">{options}</div>
-      <Button kind="secondary" onClick={onDone}>
+      <Button kind="secondary" onClick={() => onDone(variant)}>
         Weiter
       </Button>
     </>

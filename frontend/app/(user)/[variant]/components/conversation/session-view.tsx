@@ -3,8 +3,9 @@
 import { useDebugMode } from "@/hooks/useDebug";
 import { Variant } from "@/lib/variants";
 import { type AgentState, useRoomContext, useVoiceAssistant } from "@livekit/components-react";
+import { LogLevel } from "livekit-client";
 import React, { useEffect } from "react";
-import Avatar from "./avatar";
+import Avatar from "./heygen/avatar/avatar";
 import { Chat } from "./livekit/chat/chat";
 
 function isAgentAvailable(agentState: AgentState) {
@@ -13,14 +14,21 @@ function isAgentAvailable(agentState: AgentState) {
 
 interface SessionViewProps {
   variant: Variant;
+  avatar: number | null;
 }
 
-export const SessionView = ({ variant, ref }: React.ComponentProps<"div"> & SessionViewProps) => {
+export const SessionView = ({
+  variant,
+  avatar,
+  ref,
+}: React.ComponentProps<"div"> & SessionViewProps) => {
   const { state: agentState } = useVoiceAssistant();
   const room = useRoomContext();
   const isChat = variant == "chat";
 
-  useDebugMode();
+  useDebugMode({
+    logLevel: LogLevel.error,
+  });
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -59,7 +67,7 @@ export const SessionView = ({ variant, ref }: React.ComponentProps<"div"> & Sess
     <main ref={ref} className="w-full">
       <div className="h-full flex flex-col px-24 py-4 justify-center">
         {isChat && <Chat />}
-        {!isChat && <Avatar />}
+        {!isChat && <Avatar avatar={avatar!} />}
       </div>
     </main>
   );

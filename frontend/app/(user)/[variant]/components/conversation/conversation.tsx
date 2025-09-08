@@ -15,6 +15,7 @@ interface ConversationProps {
   onDone?: () => void;
   onCancel?: () => void;
   variant: Variant;
+  avatar: number | null;
 }
 
 export interface EventInput {
@@ -26,7 +27,7 @@ export interface EventInput {
 
 const MotionSessionView = motion.create(SessionView);
 
-export default function Conversation({ variant, onCancel }: ConversationProps) {
+export default function Conversation({ variant, avatar, onCancel }: ConversationProps) {
   const [room] = useState(() => new Room());
   const [eventData, setEventData] = useState<{
     type: EventType;
@@ -128,6 +129,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
           <MotionSessionView
             key="session-view"
             variant={variant}
+            avatar={avatar}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{
