@@ -218,6 +218,9 @@ class DynamicAgent(Agent):
                                        )
                     )
                     print(f"swipe event result {event_result}")
+                elif event_type == "evaluation":
+                    event_result = await show_evaluation_event(agent_config, self.session.userdata.to_dict())
+                    print(f"evaluation event result {event_result}")
                 else:
                     return
 
@@ -276,6 +279,20 @@ async def show_lifeline_event(
     payload={
         "type": "lifeline",
         "chapter_id": chapter_id,
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def show_evaluation_event(
+    agent_config: dict,
+    userdata: dict,
+) -> dict:
+    logger.debug("show_evaluation_event")
+    chapter_id = agent_config["chapter_id"]
+    payload={
+        "type": "evaluation",
+        "chapter_id": chapter_id,
+        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result

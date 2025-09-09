@@ -1,4 +1,5 @@
 import { Button } from "@/components/Button";
+import { EventItemResult } from "@/lib/types";
 import {
   Chart as ChartJS,
   ChartOptions,
@@ -11,7 +12,6 @@ import { getRelativePosition } from "chart.js/helpers";
 import dragDataPlugin from "chartjs-plugin-dragdata";
 import React, { MouseEventHandler, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { EventItemResult } from "./container";
 
 ChartJS.register(LinearScale, PointElement, LineElement, dragDataPlugin);
 

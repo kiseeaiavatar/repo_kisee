@@ -64,6 +64,13 @@ class UserData:
 
         return transitions
 
+    def to_dict(self) -> dict:
+        """Returns a dictionary of the user data"""
+        return {
+            # "agents": self.agents,
+            "preferences": self.preferences,
+        }
+
     def summarize(self) -> str:
         """Returns a JSON string of all user preferences."""
         return json.dumps(self.preferences)

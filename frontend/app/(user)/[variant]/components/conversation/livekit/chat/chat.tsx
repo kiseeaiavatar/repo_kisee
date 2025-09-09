@@ -1,7 +1,8 @@
 import useChatAndTranscription from "@/hooks/useChatAndTranscription";
 import { cn } from "@/lib/utils";
 import { type ReceivedChatMessage, useRemoteParticipants } from "@livekit/components-react";
-import React from "react";
+import React, { useContext, useEffect } from "react";
+import ConversationContext from "../../conversation-context";
 import { ChatEntry } from "./chat-entry";
 import { ChatInput } from "./chat-input";
 import { ChatMessageView } from "./chat-message-view";
@@ -9,6 +10,7 @@ import { ChatMessageView } from "./chat-message-view";
 export function Chat() {
   const { messages, send } = useChatAndTranscription();
   const [isSendingMessage, setIsSendingMessage] = React.useState(false);
+  const { setMessages } = useContext(ConversationContext);
 
   const participants = useRemoteParticipants();
   const isAgentAvailable2 = participants.some((p) => p.isAgent);
@@ -22,6 +24,10 @@ export function Chat() {
       setIsSendingMessage(false);
     }
   };
+
+  useEffect(() => {
+    setMessages(messages);
+  });
 
   return (
     <>
