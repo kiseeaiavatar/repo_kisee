@@ -37,7 +37,7 @@ export default function JobGallery({ images }: JobGalleryProps) {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-4 grid-rows-[200px_minmax(900px,1fr)_100px]">
+      <div className="grid grid-cols-5 gap-4 auto-rows-[200px]">
         {images.map((img, i) => {
           return (
             <div className="overflow-hidden relative cursor-pointer" key={i}>
