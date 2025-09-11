@@ -88,7 +88,7 @@ async def entrypoint(ctx: agents.JobContext):
         print(f"init dyn agent {i}: {agents[i]['chapter_id']}")
         dynamic_agents.append(DynamicAgent(agents[i]))
 
-    # FIXME remove agents from userData
+    # TODO remove agents from userData
     userdata = UserData(agents=agents, dynamic_agents=dynamic_agents)
     agent = userdata.dynamic_agents[userdata.current_agent_idx]
     session = AgentSession[UserData](

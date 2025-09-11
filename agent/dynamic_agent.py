@@ -13,7 +13,7 @@ from livekit.agents import (
 # Type alias for RunContext with UserData
 RunContext_T = RunContext[UserData]
 
-# FIXME to ENV var
+# TODO to ENV var
 TOOL_TIMEOUT = 900  # 15 minutes timeout for tool responses
 
 # Create a named logger
