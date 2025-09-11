@@ -1,5 +1,6 @@
 from user_data import UserData
 
+import os
 import json
 import logging
 from livekit.agents import (
@@ -51,7 +52,7 @@ async def transfer_to_next_agent(
     # return next_agent, f"Transferring to agent {next_agent_idx}"
     return next_agent
 
-COMMON_INSTRUCTIONS = (
+COMMON_INSTRUCTIONS_DEFAULT = (
     "Du bist ein digitaler Berufsberater (Avatar) und führst Sprachinteraktionen mit Nutzer:innen durch, die sich beruflich orientieren möchten. "
     "Deine Aufgabe ist es, sie freundlich, empathisch und klar bei ihrer Berufsfindung zu unterstützen. "
     "\n\n"
@@ -77,6 +78,9 @@ COMMON_INSTRUCTIONS = (
     "\n\n"
     "Wenn du den Nutzer zu einem anderen Agent weiterleitest sei still und sage **NICHT** 'Ich leite dich nun weiter'."
 )
+
+COMMON_INSTRUCTIONS = os.getenv(
+    "COMMON_INSTRUCTIONS", COMMON_INSTRUCTIONS_DEFAULT)
 
 class DynamicAgent(Agent):
     config: dict
