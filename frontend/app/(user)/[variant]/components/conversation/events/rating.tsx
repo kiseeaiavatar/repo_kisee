@@ -70,8 +70,8 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
               <input
                 type="range"
                 value={results[i]}
-                min="0"
-                max="3"
+                min="1"
+                max="4"
                 step="1"
                 id={id}
                 name={id}

@@ -64,11 +64,11 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
   };
 
   const handleLike = () => {
-    next(1);
+    next(4);
   };
 
   const handleDislike = () => {
-    next(0);
+    next(1);
   };
 
   return (
