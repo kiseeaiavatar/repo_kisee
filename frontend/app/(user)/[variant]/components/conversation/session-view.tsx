@@ -3,6 +3,7 @@
 import { useDebugMode } from "@/hooks/useDebug";
 import { Variant } from "@/lib/variants";
 import { type AgentState, useRoomContext, useVoiceAssistant } from "@livekit/components-react";
+import { LogLevel } from "livekit-client";
 import React, { useEffect } from "react";
 import Avatar from "./avatar";
 import { Chat } from "./livekit/chat/chat";
@@ -20,7 +21,9 @@ export const SessionView = ({ variant, ref }: React.ComponentProps<"div"> & Sess
   const room = useRoomContext();
   const isChat = variant == "chat";
 
-  useDebugMode();
+  useDebugMode({
+    logLevel: LogLevel.info,
+  });
 
   useEffect(() => {
     const timeout = setTimeout(() => {

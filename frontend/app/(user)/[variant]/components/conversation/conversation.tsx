@@ -1,13 +1,14 @@
 "use client";
 
 import useConnectionDetails from "@/hooks/useConnectionDetails";
-import { EventType } from "@/lib/types";
+import { EventInput, EventResult, EventType } from "@/lib/types";
 import { Variant } from "@/lib/variants";
 import { RoomAudioRenderer, RoomContext, StartAudio } from "@livekit/components-react";
 import { Room, RoomEvent, RpcInvocationData } from "livekit-client";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import EventContainer, { EventResult } from "./events/container";
+import { ConversationProvider } from "./conversation-context";
+import EventContainer from "./events/container";
 import { SessionView } from "./session-view";
 import Sidebar from "./sidebar";
 
@@ -15,13 +16,6 @@ interface ConversationProps {
   onDone?: () => void;
   onCancel?: () => void;
   variant: Variant;
-}
-
-export interface EventInput {
-  type?: EventType;
-  items?: string[];
-  description?: string;
-  chapter_id?: string;
 }
 
 const MotionSessionView = motion.create(SessionView);
@@ -111,6 +105,11 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
   };
 
   const handleEventSubmit = (result: EventResult) => {
+    if (eventData?.type == "evaluation") {
+      handleCancel();
+      return;
+    }
+
     setEventData(null);
     // Dispatch event to resolve the RPC promise
     window.dispatchEvent(new CustomEvent("eventSubmitted", { detail: result }));
@@ -118,35 +117,37 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
 
   return (
     <div className={`flex h-full bg-primary-${isChat ? 100 : 500}`}>
-      <RoomContext.Provider value={room}>
-        <div className="flex-initial">
-          <Sidebar onCancel={handleCancel} />
-        </div>
-        <div className="center flex flex-1 justify-center">
-          <RoomAudioRenderer muted={isChat} />
-          <StartAudio label="Start Audio" />
-          <MotionSessionView
-            key="session-view"
-            variant={variant}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              duration: 0.5,
-              ease: "linear",
-              delay: 0.5,
-            }}
-          />
-        </div>
-        {eventData && (
-          <div className="shadow-[-4px_4px_16px_rgba(0,0,0,0.15)] bg-primary-200 text-primary-500 flex-1 rounded-l-3xl p-4">
-            <EventContainer
-              eventType={eventData.type}
-              eventInput={eventData.input}
-              onSubmit={handleEventSubmit}
+      <ConversationProvider>
+        <RoomContext.Provider value={room}>
+          <div className="flex-initial">
+            <Sidebar onCancel={handleCancel} />
+          </div>
+          <div className="center flex flex-1 justify-center">
+            <RoomAudioRenderer muted={isChat} />
+            <StartAudio label="Start Audio" />
+            <MotionSessionView
+              key="session-view"
+              variant={variant}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: 0.5,
+                ease: "linear",
+                delay: 0.5,
+              }}
             />
           </div>
-        )}
-      </RoomContext.Provider>
+          {eventData && (
+            <div className="shadow-[-4px_4px_16px_rgba(0,0,0,0.15)] bg-primary-200 text-primary-500 flex-1 rounded-l-3xl p-4">
+              <EventContainer
+                eventType={eventData.type}
+                eventInput={eventData.input}
+                onSubmit={handleEventSubmit}
+              />
+            </div>
+          )}
+        </RoomContext.Provider>
+      </ConversationProvider>
     </div>
   );
 }

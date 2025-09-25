@@ -1,6 +1,6 @@
-import { EventType } from "@/lib/types";
+import { EventInput, EventItemResult, EventResult, EventType } from "@/lib/types";
 import React from "react";
-import { EventInput } from "../conversation";
+import EvaluationEvent from "./evaluation";
 import LifelineEvent from "./lifeline";
 import RatingEvent from "./rating";
 import SwipeEvent from "./swipe";
@@ -9,17 +9,6 @@ interface EventContainerProps {
   eventType: EventType;
   eventInput: EventInput;
   onSubmit: (result: EventResult) => void;
-}
-
-export interface EventResult {
-  id: string;
-  results: EventItemResult[];
-  created_at: string;
-}
-
-export interface EventItemResult {
-  item: string;
-  rating: number;
 }
 
 const getEvent = (
@@ -36,6 +25,8 @@ const getEvent = (
       return <RatingEvent items={eventInput.items} onSubmit={onSubmit} />;
     case "lifeline":
       return <LifelineEvent onSubmit={onSubmit} />;
+    case "evaluation":
+      return <EvaluationEvent data={eventInput} onSubmit={onSubmit} />;
     case "none":
       return <p className="text-orange">None event type</p>;
     default:

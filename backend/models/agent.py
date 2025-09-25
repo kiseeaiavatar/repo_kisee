@@ -15,6 +15,7 @@ class EventType(str, Enum):
     SWIPE = "swipe"
     RATING = "rating"
     LIFELINE= "lifeline"
+    EVALUATION= "evaluation"
 
 
 class InstructionType(str, Enum):
