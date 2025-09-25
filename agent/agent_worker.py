@@ -78,6 +78,8 @@ async def entrypoint(ctx: agents.JobContext):
 
     metadata = json.loads(ctx.job.metadata)
     variant = metadata["variant"]
+    subject_id = metadata["subject_id"]
+    avatar_id = metadata["avatar_id"]
     isAvatar = variant == "avatar"
 
     # Load agents from database
@@ -90,6 +92,10 @@ async def entrypoint(ctx: agents.JobContext):
 
     # TODO remove agents from userData
     userdata = UserData(agents=agents, dynamic_agents=dynamic_agents)
+    userdata.subject_id = subject_id
+    userdata.variant = variant
+    userdata.avatar_id = avatar_id
+
     agent = userdata.dynamic_agents[userdata.current_agent_idx]
     session = AgentSession[UserData](
         userdata=userdata,

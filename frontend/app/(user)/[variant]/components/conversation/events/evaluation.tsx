@@ -27,9 +27,17 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
 
   const generateEvaluation = useCallback((body: MyceliaEvaluationRequestBody) => {
     const url = new URL("/api/evaluation", window.location.origin);
+
     return fetch(url.toString(), {
       method: "POST",
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        ...body,
+        userinfo: {
+          ...body.userinfo,
+          start_time: new Date(Math.floor(body.userinfo.start_time)).toISOString(),
+          end_time: new Date().toISOString(),
+        },
+      }),
     }).then((res) => res.json());
   }, []);
 
@@ -42,6 +50,7 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
     generateEvaluation({
       conversation: myceliaConversation,
       games: myceliaGames,
+      userinfo: data.userdata!.userinfo,
     })
       .then((data: MyceliaEvaluationResponseBody) => {
         console.log("evaluation result", data);
@@ -106,7 +115,6 @@ function messagesToMyceliaConversation(
 function preferencesToMyceliaGames(preferences: {
   [key: string]: EventItemResult[];
 }): MyceliaGames {
-  console.log("preferences", preferences);
   return Object.entries(preferences).map(([key, resultItems]) => ({
     name: key,
     items: resultItems,

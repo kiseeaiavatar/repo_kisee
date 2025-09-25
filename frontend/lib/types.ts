@@ -1,5 +1,14 @@
+import { Variant } from "./variants";
+
 export type EventType = "none" | "swipe" | "rating" | "lifeline" | "evaluation";
 export type UserInstructionType = "none" | "dm";
+
+export interface Userinfo {
+  subject_id: string;
+  avatar_id: string;
+  variant: Variant;
+  start_time: number;
+}
 
 export interface EventInput {
   type?: EventType;
@@ -10,6 +19,7 @@ export interface EventInput {
     preferences: {
       [key: string]: EventItemResult[];
     };
+    userinfo: Userinfo;
   };
 }
 
@@ -38,6 +48,7 @@ export type MyceliaGames = {
 export type MyceliaEvaluationRequestBody = {
   conversation: MyceliaConversation;
   games: MyceliaGames;
+  userinfo: Userinfo;
 };
 
 export type MyceliaEvaluationResponseBody = {
