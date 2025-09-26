@@ -23,7 +23,7 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
   };
 
   const isLastPage = () => {
-    return page + 1 > items.length / ITEMS_PER_PAGE;
+    return page + 1 >= items.length / ITEMS_PER_PAGE;
   };
 
   const handleNext = () => {
@@ -54,7 +54,7 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
   return (
     <div className="flex flex-col flex-1">
       <p>
-        {page + 1} / {Math.floor(items.length / ITEMS_PER_PAGE) + 1}
+        {page + 1} / {Math.ceil(items.length / ITEMS_PER_PAGE)}
       </p>
       {items.map((item, i) => {
         if (i < page * ITEMS_PER_PAGE || i >= page * ITEMS_PER_PAGE + ITEMS_PER_PAGE) {
