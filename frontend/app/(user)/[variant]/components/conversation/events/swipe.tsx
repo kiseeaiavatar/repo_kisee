@@ -1,7 +1,8 @@
 import { Button } from "@/components/Button";
+import { EventItemResult } from "@/lib/types";
 import Image from "next/image";
 import React, { useState } from "react";
-import { EventItemResult } from "./container";
+import { parseEventItem } from "./utils";
 
 interface SwipeEventProps {
   items: string[];
@@ -23,9 +24,11 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
       setPage(page + 1);
     } else {
       const finalResults = items.map((item, idx) => {
+        const parsedItem = parseEventItem(item);
         return {
-          item,
-          rating: results[idx],
+          item: parsedItem.text,
+          skill: parsedItem.skill,
+          rating: newResults[idx],
         };
       });
       onSubmit(finalResults);
@@ -34,24 +37,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
 
   const parseItem = () => {
     const str = items[page];
-
-    // Match all [tag] and <tag>
-    const tagRegex = /(\[([^\]]+)\])|(<([^>]+)>)/g;
-
-    let match, img, skill;
-    while ((match = tagRegex.exec(str)) !== null) {
-      if (match[2]) img = match[2];
-      if (match[4]) skill = match[4];
-    }
-
-    // Remove tags from the string to get remaining text
-    const text = str.replace(tagRegex, "").trim();
-
-    return {
-      img,
-      skill,
-      text,
-    };
+    return parseEventItem(str);
   };
 
   const itemImage = () => {
@@ -78,11 +64,11 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
   };
 
   const handleLike = () => {
-    next(1);
+    next(4);
   };
 
   const handleDislike = () => {
-    next(0);
+    next(1);
   };
 
   return (

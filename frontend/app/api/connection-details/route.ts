@@ -81,7 +81,7 @@ function createParticipantToken(userInfo: AccessTokenOptions, roomName: string, 
     agents: [
       new RoomAgentDispatch({
         agentName: `kisee-agent-${APP_ENV}`,
-        metadata: `{"user_id": "12345", "variant":"${variant}"}`,
+        metadata: `{"subject_id": "12345", "variant":"${variant}", "avatar_id": ""}`,
       }),
     ],
   });

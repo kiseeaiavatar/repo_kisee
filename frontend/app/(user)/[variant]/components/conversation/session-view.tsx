@@ -27,7 +27,7 @@ export const SessionView = ({
   const isChat = variant == "chat";
 
   useDebugMode({
-    logLevel: LogLevel.error,
+    logLevel: LogLevel.info,
   });
 
   useEffect(() => {

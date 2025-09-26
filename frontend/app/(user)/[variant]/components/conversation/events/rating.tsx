@@ -1,6 +1,7 @@
 import { Button } from "@/components/Button";
+import { EventItemResult } from "@/lib/types";
 import React, { useState } from "react";
-import { EventItemResult } from "./container";
+import { parseEventItem } from "./utils";
 
 interface RatingEventProps {
   items: string[];
@@ -28,8 +29,10 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
   const handleNext = () => {
     if (isLastPage()) {
       const finalResults = items.map((item, idx) => {
+        const parsedItem = parseItem(item);
         return {
-          item,
+          item: parsedItem.text,
+          skill: parsedItem.skill,
           rating: results[idx],
         };
       });
@@ -37,6 +40,15 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
     } else {
       setPage(page + 1);
     }
+  };
+
+  const parseItem = (item: string) => {
+    return parseEventItem(item);
+  };
+
+  const itemText = (item: string) => {
+    const parsedItem = parseItem(item);
+    return parsedItem.text;
   };
 
   return (
@@ -52,14 +64,14 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
         return (
           <div key={i} className="item flex mt-4 gap-4">
             <label className="w-[30%] pt-[10px] text-left" htmlFor={id}>
-              {item}
+              {itemText(item)}
             </label>
             <div className="flex flex-col flex-1">
               <input
                 type="range"
                 value={results[i]}
-                min="0"
-                max="3"
+                min="1"
+                max="4"
                 step="1"
                 id={id}
                 name={id}

@@ -187,7 +187,7 @@ class DynamicAgent(Agent):
             event_result = ""
             try:
                 if event_type == "lifeline":
-                    event_result = await show_lifeline_event(agent_config)
+                    event_result = await show_lifeline_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
                         user_input=f"lifeline results: {event_result}",
                         instructions= ("Ignoriere die Ereignisse bei 0 und 100."
@@ -199,7 +199,7 @@ class DynamicAgent(Agent):
                     )
                     print(f"lifeline result {event_result}")
                 elif event_type == "rating":
-                    event_result = await show_rating_event(agent_config)
+                    event_result = await show_rating_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
                         user_input=f"rating results: {event_result}",
                         instructions= ("Ignoriere Ergebnisse mit Wert 0."
@@ -209,7 +209,7 @@ class DynamicAgent(Agent):
                     )
                     print(f"rating event result {event_result}")
                 elif event_type == "swipe":
-                    event_result = await show_swipe_event(agent_config)
+                    event_result = await show_swipe_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
                         user_input=f"swipe results: {event_result}",
                         instructions= ("Ignoriere Ergebnisse mit Wert 0."
@@ -218,6 +218,9 @@ class DynamicAgent(Agent):
                                        )
                     )
                     print(f"swipe event result {event_result}")
+                elif event_type == "evaluation":
+                    event_result = await show_evaluation_event(agent_config, self.session.userdata.to_dict())
+                    print(f"evaluation event result {event_result}")
                 else:
                     return
 
@@ -230,6 +233,7 @@ class DynamicAgent(Agent):
 
 async def show_rating_event(
     agent_config: dict,
+    userdata: dict,
 ) -> dict:
     logger.debug("show_rating_event")
     chapter_id = agent_config["chapter_id"]
@@ -244,12 +248,14 @@ async def show_rating_event(
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
+        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
 
 async def show_swipe_event(
     agent_config: dict,
+    userdata: dict,
 ) -> dict:
     logger.debug("show_swipe_event")
     chapter_id = agent_config["chapter_id"]
@@ -264,18 +270,35 @@ async def show_swipe_event(
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
+        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
 
 async def show_lifeline_event(
     agent_config: dict,
+    userdata: dict,
 ) -> dict:
     logger.debug("show_lifeline_event")
     chapter_id = agent_config["chapter_id"]
     payload={
         "type": "lifeline",
         "chapter_id": chapter_id,
+        "userdata": userdata
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def show_evaluation_event(
+    agent_config: dict,
+    userdata: dict,
+) -> dict:
+    logger.debug("show_evaluation_event")
+    chapter_id = agent_config["chapter_id"]
+    payload={
+        "type": "evaluation",
+        "chapter_id": chapter_id,
+        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result

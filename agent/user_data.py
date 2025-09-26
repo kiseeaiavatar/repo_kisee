@@ -1,4 +1,5 @@
 import json
+import datetime
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
 from livekit.agents import Agent
@@ -21,7 +22,11 @@ class UserData:
     dynamic_agents: list[Agent] = field(default_factory=list)
     prev_agent: Optional[Agent] = None
     current_agent_idx: int = 0
-    age: int = 25
+
+    subject_id: str = ""
+    avatar_id: str = ""
+    variant: str = ""
+    start_time = datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000 # in ms
 
     current_state: str = "Begrüßung"
     state_transitions: Dict[str, str] = field(default_factory=dict)
@@ -63,6 +68,19 @@ class UserData:
             transitions[last_state] = "final"
 
         return transitions
+
+    def to_dict(self) -> dict:
+        """Returns a dictionary of the user data"""
+        return {
+            # "agents": self.agents,
+            "preferences": self.preferences,
+            "userinfo": {
+                "subject_id": self.subject_id,
+                "avatar_id": self.avatar_id,
+                "variant": self.variant,
+                "start_time": self.start_time
+            }
+        }
 
     def summarize(self) -> str:
         """Returns a JSON string of all user preferences."""

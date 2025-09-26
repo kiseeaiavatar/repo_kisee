@@ -306,45 +306,47 @@ const AdminDashboard: React.FC = () => {
               <option value="swipe">Swipe</option>
               <option value="rating">Rating</option>
               <option value="lifeline">Lifeline</option>
+              <option value="evaluation">Evaluation</option>
             </TextField>
-            {formData.event_type && formData.event_type != "lifeline" && (
-              <>
-                <TextField
-                  fullWidth
-                  label="Event Description"
-                  value={formData.event_input?.description || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      event_input: {
-                        description: e.target.value,
-                        items: formData.event_input?.items || [],
-                      },
-                    })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="Event Items"
-                  multiline
-                  rows={4}
-                  value={formData.event_input?.items?.join("\n") || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      event_input: {
-                        description: formData.event_input?.description || "",
-                        items: e.target.value.split("\n").filter(Boolean),
-                      },
-                    })
-                  }
-                  helperText="Enter each item on a new line. Press Enter to add a new item. Add images or ESCO skills with '[img-url]' or '<skill-uuid>'"
-                  inputProps={{
-                    style: { whiteSpace: "pre-wrap" },
-                  }}
-                />
-              </>
-            )}
+            {formData.event_type &&
+              (formData.event_type == "swipe" || formData.event_type == "rating") && (
+                <>
+                  <TextField
+                    fullWidth
+                    label="Event Description"
+                    value={formData.event_input?.description || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        event_input: {
+                          description: e.target.value,
+                          items: formData.event_input?.items || [],
+                        },
+                      })
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    label="Event Items"
+                    multiline
+                    rows={4}
+                    value={formData.event_input?.items?.join("\n") || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        event_input: {
+                          description: formData.event_input?.description || "",
+                          items: e.target.value.split("\n").filter(Boolean),
+                        },
+                      })
+                    }
+                    helperText="Enter each item on a new line. Press Enter to add a new item. Add images or ESCO skills with '[img-url]' or '<skill-uuid>'"
+                    inputProps={{
+                      style: { whiteSpace: "pre-wrap" },
+                    }}
+                  />
+                </>
+              )}
           </Box>
         </DialogContent>
         <DialogActions>
