@@ -45,7 +45,6 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
     // send data and transcriptions to backend
     const myceliaConversation = messagesToMyceliaConversation(messages, room);
     const myceliaGames = preferencesToMyceliaGames(data.userdata!.preferences);
-    // FIXME add user info (chat vs avatar, subject number, time, selected avatar)
 
     generateEvaluation({
       conversation: myceliaConversation,
@@ -53,7 +52,6 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
       userinfo: data.userdata!.userinfo,
     })
       .then((data: MyceliaEvaluationResponseBody) => {
-        console.log("evaluation result", data);
         setEvaluationUrls(data);
       })
       .catch((error) => {

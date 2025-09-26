@@ -14,10 +14,7 @@ export type ConnectionDetails = {
   participantToken: string;
 };
 
-// --url http://49.12.65.167:3003/api/avatar/conversation \
-// --header 'Authorization: Bearer ' \
 export async function POST(request: NextRequest) {
-  console.log("evaluation request", request);
   try {
     if (!MYCELIA_API_KEY) {
       throw new Error("MyCelia API key is missing from .env");
@@ -38,8 +35,6 @@ export async function POST(request: NextRequest) {
       return new NextResponse(`No games data provided`, { status: 400 });
     }
 
-    console.log("evaluation requestData", requestData);
-
     const res = await fetch(`${MYCELIA_URL}/avatar/conversation`, {
       method: "POST",
       headers: {
@@ -53,8 +48,6 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await res.json();
-    console.log("mycelia response", data);
-
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error retrieving mycelia response:", error);
