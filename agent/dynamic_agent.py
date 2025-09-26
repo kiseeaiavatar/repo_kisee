@@ -114,8 +114,8 @@ class DynamicAgent(Agent):
     async def on_enter(self) -> None:
         # agent_name = self.__class__.__name__
         # logger.info(f"entering task {agent_name}")
-        agent_name = self.config["chapter_id"]
-        print(f"entering new agent {agent_name}")
+        chapter_id = self.config["chapter_id"]
+        print(f"entering new agent {chapter_id}")
         print(f"agent instructions {self.instructions}")
 
         userdata: UserData = self.session.userdata
@@ -148,10 +148,7 @@ class DynamicAgent(Agent):
         await self.update_chat_ctx(chat_ctx)
         print("chat ctx updated")
 
-        # await self.session.say(
-        #     text=f"agent {agent_name}",
-        #     add_to_chat_ctx=False
-        # )
+        await send_chapter(chapter_id)
 
         user_instruction=self.config["user_instruction"]
         if self.config["user_instruction_type"] == "dm":
@@ -314,7 +311,21 @@ async def perform_rpc_with_payload(payload: dict):
         response_timeout=TOOL_TIMEOUT
     )
 
-    if isinstance(result, str):
-        result = json.loads(result)
+    # ensure it's a not empty string
+    if isinstance(result, str) and result:
+        try:
+            result = json.loads(result)
+            return result.get("results", [])
+        except Exception as e:
+            logger.error(f"Failed to parse event result: {str(e)}")
+            return []
 
-    return result.get("results", [])
+    return []
+
+async def send_chapter(chapter_id: str):
+    logger.debug(f"send_chapter: {chapter_id}")
+    payload={
+        "type": "chapter",
+        "chapter_id": chapter_id,
+    }
+    await perform_rpc_with_payload(payload)

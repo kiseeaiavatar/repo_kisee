@@ -27,6 +27,8 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
     input: EventInput;
   } | null>(null);
 
+  const [chapter, setChapter] = useState("");
+
   const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(variant);
   const isChat = variant == "chat";
 
@@ -67,8 +69,15 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
               input = { description: data.payload };
             }
 
+            const eventType = input.type as EventType;
+
+            if (eventType == "chapter" && input.chapter_id) {
+              setChapter(input.chapter_id);
+              return Promise.resolve("");
+            }
+
             setEventData({
-              type: input.type as EventType,
+              type: eventType,
               input,
             });
             return new Promise((resolve) => {
@@ -78,7 +87,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (event: any) => {
                   // Ensure we're sending a properly serialized object
-                  const result =
+                  const result: string =
                     typeof event.detail === "string" ? event.detail : JSON.stringify(event.detail);
                   resolve(result);
                 },
@@ -120,7 +129,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
       <ConversationProvider>
         <RoomContext.Provider value={room}>
           <div className="flex-initial">
-            <Sidebar onCancel={handleCancel} />
+            <Sidebar chapter={chapter} onCancel={handleCancel} />
           </div>
           <div className="center flex flex-1 justify-center">
             <RoomAudioRenderer muted={isChat} />
