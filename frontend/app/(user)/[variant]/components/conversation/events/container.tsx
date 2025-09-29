@@ -27,8 +27,9 @@ const getEvent = (
       return <LifelineEvent onSubmit={onSubmit} />;
     case "evaluation":
       return <EvaluationEvent data={eventInput} onSubmit={onSubmit} />;
+    case "chapter":
     case "none":
-      return <p className="text-orange">None event type</p>;
+      return <p className="text-orange">Unexpected event type</p>;
     default:
       const _exhaustiveCheck: never = eventType;
       return <p className="text-red">Unknown event type</p>;
