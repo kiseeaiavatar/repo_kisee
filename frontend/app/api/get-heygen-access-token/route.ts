@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const HEYGEN_API_KEY = process.env.HEYGEN_API_KEY;
-const HEYGEN_API_BASE_URL = process.env.HEYGEN_API_BASE_URL ?? "https://api.heygen.com";
+const HEYGEN_API_BASE_URL = process.env.NEXT_PUBLIC_HEYGEN_API_BASE_URL ?? "https://api.heygen.com";
 
 export async function POST(_request: NextRequest) {
   try {

@@ -1,3 +1,4 @@
+import useChatAndTranscription from "@/hooks/useChatAndTranscription";
 import useHeygenAccessToken from "@/hooks/useHeygenAccessToken";
 import {
   AvatarQuality,
@@ -7,11 +8,7 @@ import {
   VoiceChatTransport,
   VoiceEmotion,
 } from "@heygen/streaming-avatar";
-import {
-  type TextStreamData,
-  VoiceAssistantControlBar,
-  useTranscriptions,
-} from "@livekit/components-react";
+import { VoiceAssistantControlBar } from "@livekit/components-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
@@ -56,10 +53,8 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     avatarName: AVATARS[avatar].avatar_id,
   });
 
-  const [handledTranscriptions, setHandledTranscriptions] = useState<string[]>([]);
   const { accessToken: heygenToken } = useHeygenAccessToken();
-
-  const transcriptions: TextStreamData[] = useTranscriptions();
+  const { messages } = useChatAndTranscription();
 
   const mediaStream = useRef<HTMLVideoElement>(null);
 
@@ -79,12 +74,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     if (sessionState === StreamingAvatarSessionState.INACTIVE && heygenToken) {
       startSessionV2(heygenToken);
     }
-    return () => {
-      if (sessionState === StreamingAvatarSessionState.CONNECTED && heygenToken) {
-        stopAvatar();
-      }
-    };
-  }, [heygenToken, sessionState]);
+  }, [heygenToken, sessionState, startSessionV2, stopAvatar]);
 
   useEffect(() => {
     if (stream && mediaStream.current) {
@@ -95,43 +85,89 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     }
   }, [mediaStream, stream]);
 
+  async function sendToHeygen(text: string) {
+    console.log(`Sending: ${text}`);
+    return repeatMessageSync(text);
+  }
+
+  // Tracks how many words have already been sent per message
+  const sentWordCountRef = useRef<Record<string, number>>({});
+  // Debounce timers for flushing leftovers
+  const flushTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+  // Outgoing queue for buffered delivery. Collects chunks which are sent out every X ms.
+  // This avoids disordering caused by overlapping async calls.
+  const queueRef = useRef<{ id: string; text: string }[]>([]);
+  const isFlushingRef = useRef(false);
+
+  // Interval fallback (batch flush every 500ms)
   useEffect(() => {
-    transcriptions.map((t) => {
-      if (handledTranscriptions.includes(t.streamInfo.id)) {
-        return;
-      }
+    const interval = setInterval(() => flushQueue(), 500);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // we really want to run this only on initial render
 
-      const isFinal = t.streamInfo.attributes["lk.transcription_final"] === "true";
-      const isUser = t.participantInfo.identity === "voice_assistant_user";
-      if (!isUser) console.debug(`transcription: ${t.text} (final: ${isFinal})`);
-    });
+  function flushQueue() {
+    if (queueRef.current.length === 0 || isFlushingRef.current) return;
 
-    // timeout required to ensure transcriptions are marked "final"
-    // TODO improvement idea: send text to heygen once a dot, exclamation mark, ... is detected
-    const timeout = setTimeout(() => {
-      if (sessionState === StreamingAvatarSessionState.CONNECTED) {
-        let handled = [...handledTranscriptions];
-        transcriptions.map((t) => {
-          if (handled.includes(t.streamInfo.id)) {
-            /* console.log("already handled", t.streamInfo.id); */
-            return;
+    isFlushingRef.current = true;
+    const batch = [...queueRef.current];
+    queueRef.current = [];
+
+    const mergedText = batch.reduce((acc, chunk) => {
+      return `${acc} ${chunk.text}`;
+    }, "");
+
+    if (mergedText.trim().length > 0) {
+      sendToHeygen(mergedText).finally(() => {
+        isFlushingRef.current = false;
+      });
+    } else {
+      isFlushingRef.current = false;
+    }
+  }
+
+  function enqueueChunk(id: string, text: string) {
+    const wasEmpty = queueRef.current.length === 0;
+    queueRef.current.push({ id, text });
+    if (wasEmpty) {
+      flushQueue(); // send immediately
+    }
+  }
+
+  // Handle streaming + scheduling flush
+  useEffect(() => {
+    messages
+      .filter((msg) => {
+        // filter user messages (and those without a `from` property)
+        const isUser = msg.from?.isLocal ?? true;
+        return !isUser;
+      })
+      .forEach((msg) => {
+        const words = msg.message.trim().split(/\s+/).filter(Boolean);
+
+        // Queue all full 5-word chunks
+        while (words.length - (sentWordCountRef.current[msg.id] ?? 0) >= 5) {
+          const start = sentWordCountRef.current[msg.id] ?? 0;
+          const chunk = words.slice(start, start + 5).join(" ");
+          enqueueChunk(msg.id, chunk);
+          sentWordCountRef.current[msg.id] = start + 5;
+        }
+
+        // Debounced leftover flush (<5 words)
+        if (flushTimersRef.current[msg.id]) {
+          clearTimeout(flushTimersRef.current[msg.id]);
+        }
+        flushTimersRef.current[msg.id] = setTimeout(() => {
+          const sent = sentWordCountRef.current[msg.id] ?? 0;
+          if (words.length > sent) {
+            const leftover = words.slice(sent).join(" ");
+            enqueueChunk(msg.id, leftover);
+            sentWordCountRef.current[msg.id] = words.length;
           }
-
-          const isFinal = t.streamInfo.attributes["lk.transcription_final"] === "true";
-          const isUser = t.participantInfo.identity === "voice_assistant_user";
-          if (isFinal && !isUser) {
-            handled = [...handled, t.streamInfo.id];
-            console.debug("-> sending final text to heygen", t.text, t.streamInfo.id);
-            repeatMessageSync(t.text);
-          }
-        });
-        setHandledTranscriptions(handled);
-      }
-    }, 1000);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [transcriptions, sessionState, handledTranscriptions, repeatMessageSync]);
+        }, 1500); // flush after 1.5s inactivity
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]); // we don't want enqueueChunk here
 
   /* TODO
    * - avatar select */
@@ -171,7 +207,9 @@ interface AvatarProps {
 
 export default function InteractiveAvatarWrapper({ avatar }: AvatarProps) {
   return (
-    <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_BASE_API_URL}>
+    <StreamingAvatarProvider
+      basePath={process.env.NEXT_PUBLIC_HEYGEN_API_BASE_URL ?? "https://api.heygen.com"}
+    >
       <InteractiveAvatar avatar={avatar} />
     </StreamingAvatarProvider>
   );
