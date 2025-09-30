@@ -128,6 +128,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
   }
 
   function enqueueChunk(id: string, text: string) {
+    console.log("enqueue chunk", id, text);
     const wasEmpty = queueRef.current.length === 0;
     queueRef.current.push({ id, text });
     if (wasEmpty) {
@@ -135,7 +136,6 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     }
   }
 
-  // Handle streaming + scheduling flush
   useEffect(() => {
     messages
       .filter((msg) => {
@@ -144,17 +144,19 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
         return !isUser;
       })
       .forEach((msg) => {
+        // split into whole words and filter empty strings
         const words = msg.message.trim().split(/\s+/).filter(Boolean);
+        let alreadySent = sentWordCountRef.current[msg.id] ?? 0;
 
-        // Queue all full 5-word chunks
-        while (words.length - (sentWordCountRef.current[msg.id] ?? 0) >= 5) {
-          const start = sentWordCountRef.current[msg.id] ?? 0;
-          const chunk = words.slice(start, start + 5).join(" ");
+        // Only send in blocks of 5, but require at least 6 words ahead
+        while (words.length - alreadySent >= 6) {
+          const chunk = words.slice(alreadySent, alreadySent + 5).join(" ");
           enqueueChunk(msg.id, chunk);
-          sentWordCountRef.current[msg.id] = start + 5;
+          alreadySent += 5; // increment local counter
+          sentWordCountRef.current[msg.id] = alreadySent; // update ref
         }
 
-        // Debounced leftover flush (<5 words)
+        // Debounced flush for leftovers (<5 words or trailing incomplete word)
         if (flushTimersRef.current[msg.id]) {
           clearTimeout(flushTimersRef.current[msg.id]);
         }
@@ -162,10 +164,12 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
           const sent = sentWordCountRef.current[msg.id] ?? 0;
           if (words.length > sent) {
             const leftover = words.slice(sent).join(" ");
-            enqueueChunk(msg.id, leftover);
-            sentWordCountRef.current[msg.id] = words.length;
+            if (leftover) {
+              enqueueChunk(msg.id, leftover);
+              sentWordCountRef.current[msg.id] = words.length;
+            }
           }
-        }, 1500); // flush after 1.5s inactivity
+        }, 1500);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]); // we don't want enqueueChunk here
