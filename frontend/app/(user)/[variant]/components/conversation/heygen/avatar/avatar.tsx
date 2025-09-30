@@ -104,9 +104,10 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     const interval = setInterval(() => flushQueue(), 500);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // we really want to run this only on initial render
+  }, [sessionState]); // no flushQueue here
 
   function flushQueue() {
+    if (sessionState !== StreamingAvatarSessionState.CONNECTED) return;
     if (queueRef.current.length === 0 || isFlushingRef.current) return;
 
     isFlushingRef.current = true;
