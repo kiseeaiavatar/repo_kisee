@@ -43,6 +43,8 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
   },
 };
 
+const HEYGEN_TEXT_WORD_COUNT = 10;
+
 function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, stopAvatar, sessionState, stream } = useStreamingAvatarSession();
 
@@ -101,7 +103,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
 
   // Interval fallback (batch flush every 500ms)
   useEffect(() => {
-    const interval = setInterval(() => flushQueue(), 500);
+    const interval = setInterval(() => flushQueue(), 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState]); // no flushQueue here
@@ -131,8 +133,10 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     console.log("enqueue chunk", id, text);
     const wasEmpty = queueRef.current.length === 0;
     queueRef.current.push({ id, text });
-    if (wasEmpty) {
-      flushQueue(); // send immediately
+    if (wasEmpty && !isFlushingRef.current) {
+      // send immediately if queue was empty before
+      // but only if we're not already flushing
+      flushQueue();
     }
   }
 
@@ -148,15 +152,15 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
         const words = msg.message.trim().split(/\s+/).filter(Boolean);
         let alreadySent = sentWordCountRef.current[msg.id] ?? 0;
 
-        // Only send in blocks of 5, but require at least 6 words ahead
-        while (words.length - alreadySent >= 6) {
-          const chunk = words.slice(alreadySent, alreadySent + 5).join(" ");
+        // Only send in blocks of X, but require at least X+1 words ahead
+        while (words.length - alreadySent >= HEYGEN_TEXT_WORD_COUNT + 1) {
+          const chunk = words.slice(alreadySent, alreadySent + HEYGEN_TEXT_WORD_COUNT).join(" ");
           enqueueChunk(msg.id, chunk);
-          alreadySent += 5; // increment local counter
+          alreadySent += HEYGEN_TEXT_WORD_COUNT; // increment local counter
           sentWordCountRef.current[msg.id] = alreadySent; // update ref
         }
 
-        // Debounced flush for leftovers (<5 words or trailing incomplete word)
+        // Debounced flush for leftovers (<X words or trailing incomplete word)
         if (flushTimersRef.current[msg.id]) {
           clearTimeout(flushTimersRef.current[msg.id]);
         }
@@ -169,7 +173,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
               sentWordCountRef.current[msg.id] = words.length;
             }
           }
-        }, 1500);
+        }, 500);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]); // we don't want enqueueChunk here
