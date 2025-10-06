@@ -9,6 +9,7 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { ConversationProvider } from "./conversation-context";
 import EventContainer from "./events/container";
+import { useStreamingAvatarSession } from "./heygen/avatar/logic";
 import { SessionView } from "./session-view";
 import Sidebar from "./sidebar";
 
@@ -16,12 +17,15 @@ interface ConversationProps {
   onDone?: () => void;
   onCancel?: () => void;
   variant: Variant;
+  avatar: number | null;
 }
 
 const MotionSessionView = motion.create(SessionView);
 
-export default function Conversation({ variant, onCancel }: ConversationProps) {
+export default function Conversation({ variant, avatar, onCancel }: ConversationProps) {
   const [room] = useState(() => new Room());
+  const { stopAvatar } = useStreamingAvatarSession();
+
   const [eventData, setEventData] = useState<{
     type: EventType;
     input: EventInput;
@@ -35,6 +39,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
   useEffect(() => {
     const onDisconnected = () => {
       onCancel?.();
+      stopAvatar();
       refreshConnectionDetails();
     };
     const onMediaDevicesError = (error: Error) => {
@@ -50,7 +55,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
       room.off(RoomEvent.Disconnected, onDisconnected);
       room.off(RoomEvent.MediaDevicesError, onMediaDevicesError);
     };
-  }, [room, refreshConnectionDetails, onCancel]);
+  }, [room, refreshConnectionDetails, onCancel, stopAvatar]);
 
   useEffect(() => {
     if (room.state === "disconnected" && connectionDetails) {
@@ -111,6 +116,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
 
   const handleCancel = () => {
     room.disconnect();
+    /* stopAvatar(); */
   };
 
   const handleEventSubmit = (result: EventResult) => {
@@ -137,6 +143,7 @@ export default function Conversation({ variant, onCancel }: ConversationProps) {
             <MotionSessionView
               key="session-view"
               variant={variant}
+              avatar={avatar}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{
