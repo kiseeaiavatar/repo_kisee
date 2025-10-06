@@ -25,10 +25,10 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
 
   const [evaluationUrls, setEvaluationUrls] = useState<MyceliaEvaluationResponseBody | null>(null);
 
-  const generateEvaluation = useCallback((body: MyceliaEvaluationRequestBody) => {
+  const generateEvaluation = useCallback(async (body: MyceliaEvaluationRequestBody) => {
     const url = new URL("/api/evaluation", window.location.origin);
 
-    return fetch(url.toString(), {
+    const res = await fetch(url.toString(), {
       method: "POST",
       body: JSON.stringify({
         ...body,
@@ -38,7 +38,8 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
           end_time: new Date().toISOString(),
         },
       }),
-    }).then((res) => res.json());
+    });
+    return res.json();
   }, []);
 
   useEffect(() => {

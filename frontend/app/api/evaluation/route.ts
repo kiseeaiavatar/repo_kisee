@@ -1,3 +1,4 @@
+import { MyceliaEvaluationRequestBody } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
 // NOTE: you are expected to define the following environment variables in `.env.local`:
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse(`No body given`, { status: 400 });
     }
 
-    const requestData = await request.json();
+    const requestData: MyceliaEvaluationRequestBody = await request.json();
     if (!requestData.conversation) {
       return new NextResponse(`No convesation data provided`, { status: 400 });
     }
@@ -35,16 +36,24 @@ export async function POST(request: NextRequest) {
       return new NextResponse(`No games data provided`, { status: 400 });
     }
 
+    if (!requestData.userinfo) {
+      return new NextResponse(`No userinfo provided`, { status: 400 });
+    }
+
+    // only send the necessary data
+    const body = JSON.stringify({
+      conversation: requestData.conversation,
+      games: requestData.games,
+      userinfo: requestData.userinfo,
+    });
+
     const res = await fetch(`${MYCELIA_URL}/avatar/conversation`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${MYCELIA_API_KEY}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        conversation: requestData.conversation,
-        games: requestData.games,
-      }),
+      body,
     });
 
     const data = await res.json();
