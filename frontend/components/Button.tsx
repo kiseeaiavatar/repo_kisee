@@ -9,12 +9,14 @@ export function Button({
   onClick,
   href,
   children,
+  disabled = false,
 }: Readonly<{
   className?: string;
   kind?: "primary" | "secondary" | "icon";
   onClick?: MouseEventHandler;
   href?: string;
   children: React.ReactNode;
+  disabled: boolean;
 }>) {
   const cnBase = `px-16 py-3 rounded-3xl ${className}`;
 
@@ -29,6 +31,10 @@ export function Button({
     cn = "bg-primary-300 rounded-[100%] p-3 hover:bg-primary-400";
   }
 
+  if (disabled) {
+    cn = `${cn} opacity-75 pointer-events-none`;
+  }
+
   if (href) {
     return (
       <Link className={cn} href={{ pathname: href }}>
@@ -38,7 +44,7 @@ export function Button({
   }
 
   return (
-    <button className={cn} {...(onClick && { onClick })}>
+    <button className={cn} {...(onClick && { onClick })} disabled={disabled}>
       {children}
     </button>
   );
