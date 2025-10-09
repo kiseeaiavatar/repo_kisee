@@ -10,7 +10,8 @@ import {
 } from "@heygen/streaming-avatar";
 import { VoiceAssistantControlBar } from "@livekit/components-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import ConversationContext from "../../conversation-context";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
 import { useStreamingAvatarSession } from "./logic/useStreamingAvatarSession";
@@ -47,6 +48,7 @@ const HEYGEN_TEXT_WORD_COUNT = 10;
 
 function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, stopAvatar, sessionState, stream } = useStreamingAvatarSession();
+  const { setMessages } = useContext(ConversationContext);
 
   const { repeatMessageSync } = useTextChat();
 
@@ -57,6 +59,10 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
 
   const { accessToken: heygenToken } = useHeygenAccessToken();
   const { messages } = useChatAndTranscription();
+
+  useEffect(() => {
+    setMessages(messages);
+  });
 
   const mediaStream = useRef<HTMLVideoElement>(null);
 
