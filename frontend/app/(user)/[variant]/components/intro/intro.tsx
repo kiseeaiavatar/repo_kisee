@@ -1,36 +1,49 @@
 "use client";
 
-import { Button } from "@/components/Button";
 import { Variant } from "@/lib/variants";
 import Image from "next/image";
 import { useState } from "react";
 import AvatarSelect from "./avatar-select";
+import Explanation from "./explanation";
+import SubjectId from "./subjectId";
+import TsAndCs from "./ts_and_cs";
 
 enum StartState {
+  SubjectId,
+  Explanation,
   Avatar,
-  Start,
+  TsAndCs,
   Done,
 }
 
 interface IntroProps {
-  onDone?: ({ avatar }: { avatar: number | null }) => void;
+  onDone?: ({ avatar, subjectId }: { avatar: number | null; subjectId: string }) => void;
   variant: Variant;
 }
 
 export default function Intro({ onDone, variant }: IntroProps) {
-  const [myState, setMyState] = useState(
-    variant == "avatar" ? StartState.Avatar : StartState.Start
-  );
+  const [myState, setMyState] = useState(StartState.SubjectId);
   const [avatar, setAvatar] = useState<number | null>(null);
+  const [subjectId, setSubjectId] = useState("");
 
   function next() {
     switch (myState) {
-      case StartState.Avatar:
-        setMyState(StartState.Start);
+      case StartState.SubjectId:
+        setMyState(StartState.Explanation);
         break;
-      case StartState.Start:
+      case StartState.Explanation:
+        if (variant === "avatar") {
+          setMyState(StartState.Avatar);
+        } else {
+          setMyState(StartState.TsAndCs);
+        }
+        break;
+      case StartState.Avatar:
+        setMyState(StartState.TsAndCs);
+        break;
+      case StartState.TsAndCs:
         setMyState(StartState.Done);
-        onDone?.({ avatar });
+        onDone?.({ avatar, subjectId });
         break;
       case StartState.Done:
         // dead end
@@ -47,10 +60,21 @@ export default function Intro({ onDone, variant }: IntroProps) {
 
   function render() {
     switch (myState) {
+      case StartState.SubjectId:
+        return (
+          <SubjectId
+            onDone={(subjectId) => {
+              setSubjectId(subjectId);
+              next();
+            }}
+          />
+        );
+      case StartState.Explanation:
+        return <Explanation onDone={next} />;
       case StartState.Avatar:
         return <AvatarSelect onDone={onAvatarSelect} />;
-      case StartState.Start:
-        return <Confirm onDone={next} />;
+      case StartState.TsAndCs:
+        return <TsAndCs onDone={next} />;
       case StartState.Done:
         // dead end
         return;
@@ -60,27 +84,17 @@ export default function Intro({ onDone, variant }: IntroProps) {
   }
 
   return (
-    <div className="flex h-full bg-secondary-500">
-      <div className="absolute top-4 left-4">
+    <div className="flex h-full bg-primary-200 justify-center items-center">
+      <div className="flex flex-col items-center w-full max-w-[50%]">
         <Image
-          src="/your-wai-logo-dark.svg"
+          src="/your-wai-logo-primary.svg"
           alt="Your wAI Logo"
           width={170}
           height={80}
           style={{ width: "170px", height: "80px" }}
         />
-      </div>
-      <div className="m-auto p-8 text-center">
-        <div className="p-8">{render()}</div>
+        <div className="p-8 text-center text-primary-500">{render()}</div>
       </div>
     </div>
-  );
-}
-
-function Confirm({ onDone }: { onDone: () => void }) {
-  return (
-    <Button kind="secondary" onClick={onDone}>
-      Beratung starten
-    </Button>
   );
 }

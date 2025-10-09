@@ -30,7 +30,7 @@ export default function Welcome({ onDone }: WelcomeProps) {
           With AI at your side.
         </p>
         <Button kind="secondary" onClick={onDone} className="w-full mb-16">
-          Let&apos;s go!
+          Los geht´s!
         </Button>
       </div>
     </div>
