@@ -24,6 +24,16 @@ export async function GET(request: NextRequest) {
   const variant = ALL_VARIANTS.find((v) => v == variantParam);
   if (!variant) return new NextResponse("bad variant given", { status: 400 });
 
+  const subjectIdParam = request.nextUrl.searchParams.get("subjectId");
+  if (!subjectIdParam || subjectIdParam == "")
+    return new NextResponse("bad subjectId given", { status: 400 });
+
+  const avatarIdParam = request.nextUrl.searchParams.get("avatarId");
+  const avatarId =
+    avatarIdParam && avatarIdParam !== "" && !Number.isNaN(Number(avatarIdParam))
+      ? Number(avatarIdParam)
+      : undefined;
+
   try {
     if (LIVEKIT_URL === undefined) {
       throw new Error("LIVEKIT_URL is not defined");
@@ -42,7 +52,9 @@ export async function GET(request: NextRequest) {
     const participantToken = await createParticipantToken(
       { identity: participantIdentity },
       roomName,
-      variant
+      variant,
+      subjectIdParam,
+      avatarId
     );
 
     // Return connection details
@@ -64,7 +76,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function createParticipantToken(userInfo: AccessTokenOptions, roomName: string, variant: Variant) {
+function createParticipantToken(
+  userInfo: AccessTokenOptions,
+  roomName: string,
+  variant: Variant,
+  subjectId: string,
+  avatarId?: number
+) {
   const at = new AccessToken(API_KEY, API_SECRET, {
     ...userInfo,
     ttl: "15m",
@@ -81,7 +99,7 @@ function createParticipantToken(userInfo: AccessTokenOptions, roomName: string, 
     agents: [
       new RoomAgentDispatch({
         agentName: `kisee-agent-${APP_ENV}`,
-        metadata: `{"subject_id": "12345", "variant":"${variant}", "avatar_id": ""}`,
+        metadata: `{"subject_id": "${subjectId}", "variant":"${variant}", "avatar_id": "${avatarId}"}`,
       }),
     ],
   });

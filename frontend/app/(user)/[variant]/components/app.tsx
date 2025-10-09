@@ -18,9 +18,10 @@ interface AppProps {
 
 export default function App({ variant }: AppProps) {
   const [appState, setAppState] = useState<AppState>(AppState.Welcome);
-  const [avatar, setAvatar] = useState<number | null>(null);
+  const [avatar, setAvatar] = useState<number | undefined>(undefined);
+  const [subjectId, setSubjectId] = useState("");
 
-  function handleNext(options?: { avatar: number | null }) {
+  function handleNext(options?: { avatar?: number; subjectId: string }) {
     switch (appState) {
       case AppState.Welcome:
         setAppState(AppState.Intro);
@@ -28,6 +29,9 @@ export default function App({ variant }: AppProps) {
       case AppState.Intro:
         if (options?.avatar != null) {
           setAvatar(options.avatar);
+        }
+        if (options?.subjectId) {
+          setSubjectId(options.subjectId);
         }
         setAppState(AppState.Conversation);
         break;
@@ -67,6 +71,7 @@ export default function App({ variant }: AppProps) {
             onDone={handleNext}
             variant={variant}
             avatar={avatar}
+            subjectId={subjectId}
           />
         );
 

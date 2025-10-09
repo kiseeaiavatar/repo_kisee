@@ -17,13 +17,13 @@ enum StartState {
 }
 
 interface IntroProps {
-  onDone?: ({ avatar, subjectId }: { avatar: number | null; subjectId: string }) => void;
+  onDone?: ({ avatar, subjectId }: { avatar?: number; subjectId: string }) => void;
   variant: Variant;
 }
 
 export default function Intro({ onDone, variant }: IntroProps) {
   const [myState, setMyState] = useState(StartState.SubjectId);
-  const [avatar, setAvatar] = useState<number | null>(null);
+  const [avatar, setAvatar] = useState<number | undefined>(undefined);
   const [subjectId, setSubjectId] = useState("");
 
   function next() {

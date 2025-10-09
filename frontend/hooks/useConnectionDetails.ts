@@ -2,7 +2,11 @@ import { ConnectionDetails } from "@/app/api/connection-details/route";
 import { Variant } from "@/lib/variants";
 import { useCallback, useEffect, useState } from "react";
 
-export default function useConnectionDetails(variant: Variant) {
+export default function useConnectionDetails(
+  variant: Variant,
+  subjectId: string,
+  avatarId?: number
+) {
   // Generate room connection details, including:
   //   - A random Room name
   //   - A random Participant name
@@ -21,6 +25,10 @@ export default function useConnectionDetails(variant: Variant) {
       window.location.origin
     );
     url.searchParams.set("variant", variant);
+    url.searchParams.set("subjectId", subjectId);
+
+    // ignore undefined, but accept `0`
+    if (avatarId !== undefined) url.searchParams.set("avatarId", `${avatarId}`);
 
     fetch(url.toString())
       .then((res) => res.json())

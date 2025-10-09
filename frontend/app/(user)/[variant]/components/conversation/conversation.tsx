@@ -17,12 +17,13 @@ interface ConversationProps {
   onDone?: () => void;
   onCancel?: () => void;
   variant: Variant;
-  avatar: number | null;
+  avatar?: number;
+  subjectId: string;
 }
 
 const MotionSessionView = motion.create(SessionView);
 
-export default function Conversation({ variant, avatar, onCancel }: ConversationProps) {
+export default function Conversation({ variant, avatar, subjectId, onCancel }: ConversationProps) {
   const [room] = useState(() => new Room());
   const { stopAvatar } = useStreamingAvatarSession();
 
@@ -33,7 +34,11 @@ export default function Conversation({ variant, avatar, onCancel }: Conversation
 
   const [chapter, setChapter] = useState("");
 
-  const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(variant);
+  const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(
+    variant,
+    subjectId,
+    avatar
+  );
   const isChat = variant == "chat";
 
   useEffect(() => {
