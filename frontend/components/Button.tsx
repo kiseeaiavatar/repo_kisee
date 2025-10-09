@@ -22,7 +22,7 @@ export function Button({
   onClick?: MouseEventHandler;
   href?: string;
   children: React.ReactNode;
-  disabled: boolean;
+  disabled?: boolean;
 }>) {
   const cnBase = `px-16 py-3 rounded-3xl ${className} ${font.className}`;
 
