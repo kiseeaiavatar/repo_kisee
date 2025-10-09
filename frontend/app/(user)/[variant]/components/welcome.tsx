@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/Button";
 import Image from "next/image";
 
 interface WelcomeProps {
@@ -8,21 +9,29 @@ interface WelcomeProps {
 
 export default function Welcome({ onDone }: WelcomeProps) {
   return (
-    <div className="h-full bg-secondary-500 flex justify-center">
-      <div className="m-auto p-8 cursor-pointer" onClick={onDone}>
-        <p className="text-center text-white mb-16 text-2xl">
-          Willkommen
-          <br />
-          bei
-        </p>
+    <div
+      className="h-full flex bg-cover justify-center items-end"
+      style={{
+        backgroundImage: "url(/splash.webp)",
+      }}
+    >
+      <div className="text-center">
         <Image
-          src="/your-wai-logo.svg"
+          src="/your-wai-logo-secondary.svg"
           alt="Your wAI Logo"
-          width={620}
-          height={280}
-          style={{ width: "620px", height: "280px" }}
+          width={350}
+          height={158}
+          style={{ width: "350px", height: "158px" }}
           priority
         />
+        <p className="text-secondary-500 my-8 text-2xl">
+          Your potential, your path.
+          <br />
+          With AI at your side.
+        </p>
+        <Button kind="secondary" onClick={onDone} className="w-full mb-16">
+          Los geht´s!
+        </Button>
       </div>
     </div>
   );

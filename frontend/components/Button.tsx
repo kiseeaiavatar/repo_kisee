@@ -1,7 +1,13 @@
 "use client";
 
+import { DM_Mono } from "next/font/google";
 import Link from "next/link";
 import { MouseEventHandler } from "react";
+
+const font = DM_Mono({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export function Button({
   className = "",
@@ -18,13 +24,13 @@ export function Button({
   children: React.ReactNode;
   disabled?: boolean;
 }>) {
-  const cnBase = `px-16 py-3 rounded-3xl ${className}`;
+  const cnBase = `px-16 py-3 rounded-3xl ${className} ${font.className}`;
 
   let cn = "";
   if (kind == "primary") {
     cn = `${cnBase} bg-primary-500 text-white hover:bg-primary-300 hover:text-primary-500`;
   } else if (kind == "secondary") {
-    cn = `${cnBase} bg-green-800 text-white hover:bg-green-500 hover:text-green-800`;
+    cn = `${cnBase} bg-secondary-500 text-black hover:bg-green-500 hover:text-green-800`;
   }
 
   if (kind == "icon") {

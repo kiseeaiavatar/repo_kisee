@@ -17,7 +17,7 @@ export default function AvatarSelect({ onDone }: { onDone: (idx: number) => void
     return (
       <div
         key={idx}
-        className={`bg-green-500 p-5 rounded-3xl cursor-pointer border-2 ${variant == idx ? "border-green-800" : "border-transparent"} hover:border-green-800`}
+        className={`rounded-3xl cursor-pointer border-2 ${variant == idx ? "border-primary-500" : "border-transparent"} hover:border-primary-500 overflow-hidden`}
         onClick={() => selectAvatarVariant(idx)}
       >
         <Image
@@ -33,13 +33,9 @@ export default function AvatarSelect({ onDone }: { onDone: (idx: number) => void
 
   return (
     <>
-      <p className="text-green-800 font-bold text-3xl">
-        Willkommen
-        <br />
-        Mit welchem Avatar möchtest du sprechen?
-      </p>
-      <div className="flex justify-evenly my-16">{options}</div>
-      <Button kind="secondary" onClick={() => onDone(variant)}>
+      <p className="font-bold">Mit welchem Avatar möchtest du sprechen?</p>
+      <div className="flex my-8 gap-8">{options}</div>
+      <Button kind="primary" onClick={() => onDone(variant)}>
         Weiter
       </Button>
     </>
