@@ -24,7 +24,12 @@ interface ConversationProps {
 const MotionSessionView = motion.create(SessionView);
 
 export default function Conversation({ variant, avatar, subjectId, onCancel }: ConversationProps) {
-  const [room] = useState(() => new Room());
+  const [room] = useState(
+    () =>
+      new Room({
+        disconnectOnPageLeave: false,
+      })
+  );
   const { stopAvatar } = useStreamingAvatarSession();
 
   const [eventData, setEventData] = useState<{
@@ -119,9 +124,31 @@ export default function Conversation({ variant, avatar, subjectId, onCancel }: C
     };
   }, [room, connectionDetails, isChat]);
 
+  useEffect(() => {
+    const handleTabClose = (event: BeforeUnloadEvent) => {
+      // Recommended
+      event.preventDefault();
+      // Included for legacy support, e.g. Chrome/Edge < 119
+      event.returnValue = true;
+    };
+
+    const handlePageHide = (event: PageTransitionEvent) => {
+      if (!event.persisted) {
+        handleCancel();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleTabClose);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleTabClose);
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, []);
+
   const handleCancel = () => {
     room.disconnect();
-    /* stopAvatar(); */
   };
 
   const handleEventSubmit = (result: EventResult) => {
