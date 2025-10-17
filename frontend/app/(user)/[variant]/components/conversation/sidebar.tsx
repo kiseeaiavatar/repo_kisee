@@ -13,11 +13,11 @@ export default function Sidebar({ chapter, onCancel }: SidebarProps) {
       <div className="flex-none">
         <Image src="/your-wai-logo.svg" alt="Your wAI Logo" width={170} height={80} priority />
       </div>
-      <div className="text-primary-500">
-        <h4 className="font-semibold">Prozessverlauf</h4>
-        <span className="font-normal">So weit bist du schon!</span>
+      <div className="text-primary-200">
+        <h4 className="font-semibold text-xl text-center">Gesprächsthemen</h4>
         <ProcessOverview />
-        <h4 className="font-semibold">{chapter}</h4>
+        <br />
+        <h4 className="font-semibold">debug: {chapter}</h4>
       </div>
       <Button kind="primary" onClick={onCancel}>
         Abbrechen

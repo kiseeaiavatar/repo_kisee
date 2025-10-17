@@ -2,11 +2,14 @@ import Image from "next/image";
 
 export default function ProcessOverview() {
   return (
-    <div className="mt-4 mr-6 grid grid-cols-1 gap-2">
-      <ProcessItem icon="life" title="Mein Leben" desc="Bereich 1" done />
+    <div className="mt-4 mx-6 grid grid-cols-1 gap-1">
+      <ProcessItem icon="life" title="Mein Leben" desc="Bereich 1" />
+      <span className="text-center text-3xl">🠓</span>
       <ProcessItem icon="users" title="Selbstbild" desc="Bereich 2" />
+      <span className="text-center text-3xl">🠓</span>
       <ProcessItem icon="shooting-star" title="Tätigkeitsfelder" desc="Bereich 3" />
-      <ProcessItem icon="filter" title="Nachschärfen" desc="Bereich 4" />
+      <span className="text-center text-3xl">🠓</span>
+      <ProcessItem icon="business" title="Berufliche Interessen" desc="Bereich 4" />
     </div>
   );
 }
@@ -22,18 +25,13 @@ function ProcessItem({
   title: string;
   desc?: string;
 }) {
-  const bg = done ? "bg-green-500" : "bg-primary-300";
+  const bg = done ? "bg-green-500" : "bg-primary-200";
   const checkmark = done ? "check-circle-filled" : "check-circle";
   return (
     <div className="flex items-center">
-      <Image
-        src={`/icon-${checkmark}.svg`}
-        alt="icon check circle"
-        width={32}
-        height={32}
-        style={{ width: "32px", height: "32px" }}
-      />
-      <div className={`${bg} rounded-3xl items-center flex-1 ml-2 p-2 pr-4 flex align-center`}>
+      <div
+        className={`${bg} text-primary-500 rounded-3xl items-center flex-1 p-3 flex align-center`}
+      >
         <Image
           src={`/icon-${icon}.svg`}
           alt={`icon ${icon}`}
@@ -48,7 +46,7 @@ function ProcessItem({
               <br />
             </>
           )}
-          <span className="text-sm">{title}</span>
+          <span className="text-sm font-semibold">{title}</span>
         </div>
       </div>
     </div>
