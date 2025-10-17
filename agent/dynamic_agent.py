@@ -87,7 +87,6 @@ class DynamicAgent(Agent):
 
     def __init__(self, config: dict) -> None:
         """Initialize the agent with all available tools."""
-        print(f"init dyn agent {config['chapter_id']}")
         instructions = (
             COMMON_INSTRUCTIONS
             + "\n\n"
@@ -100,7 +99,6 @@ class DynamicAgent(Agent):
                 + config["end_requirement"]
                 + " führe das transfer_to_next_agent Tool aus ohne es dem Nutzer mitzuteilen."
             )
-        print(f"with agent instructions {instructions}")
 
         super().__init__(
             instructions=instructions,
@@ -116,7 +114,6 @@ class DynamicAgent(Agent):
         # logger.info(f"entering task {agent_name}")
         chapter_id = self.config["chapter_id"]
         print(f"entering new agent {chapter_id}")
-        print(f"agent instructions {self.instructions}")
 
         userdata: UserData = self.session.userdata
 

@@ -59,9 +59,6 @@ async def load_agent_config_from_db():
     """
     cursor = db.agents.find().sort("order", 1)
     agents = await cursor.to_list(None)
-    logger.debug("===================== AGENTS =========================")
-    logger.debug(f"agents from db: {agents}")
-    logger.debug("======================================================")
 
     return agents
 
@@ -87,7 +84,6 @@ async def entrypoint(ctx: agents.JobContext):
 
     dynamic_agents = []
     for i in range(len(agents)):
-        print(f"init dyn agent {i}: {agents[i]['chapter_id']}")
         dynamic_agents.append(DynamicAgent(agents[i]))
 
     # TODO remove agents from userData
@@ -107,11 +103,6 @@ async def entrypoint(ctx: agents.JobContext):
         turn_detection=MultilingualModel(),
         # allow_interruptions=False # cant disable interruptions when using realtime model
     )
-
-    logger.debug("===================== CTX =========================")
-    logger.debug(f"context: {ctx}")
-    logger.debug("===================================================")
-
 
     await ctx.connect()
 
