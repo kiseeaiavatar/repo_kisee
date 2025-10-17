@@ -13,14 +13,14 @@ export default function TsAndCs({ onDone }: { onDone: () => void }) {
         <strong>Bevor du das Gespräch startest, bestätige bitte:</strong>
       </p>
       <div className="text-left my-8 ">
-        <div className="">
+        <div className="flex flex-row">
           <input
             type="checkbox"
             id="cb-accept-terms"
-            className="border border-primary-500 bg-primary-200"
+            className="border border-primary-500 bg-primary-200 cursor-pointer"
             onChange={(e) => setTermsAccepted(e.target.checked)}
           />
-          <label htmlFor="cb-accept-terms" className="ml-2">
+          <label htmlFor="cb-accept-terms" className="ml-2 cursor-pointer">
             Ich bin 18 oder älter und habe die{" "}
             <a href="/terms_and_conditions" target="_blank" className="underline">
               Datenschutzrichtlinien
@@ -29,14 +29,14 @@ export default function TsAndCs({ onDone }: { onDone: () => void }) {
           </label>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 flex flex-row">
           <input
             type="checkbox"
             id="cb-acknowledge-ai"
-            className="border border-primary-500 bg-primary-200"
+            className="border border-primary-500 bg-primary-200 cursor-pointer"
             onChange={(e) => setAckAI(e.target.checked)}
           />
-          <label htmlFor="cb-acknowledge-ai" className="ml-2">
+          <label htmlFor="cb-acknowledge-ai" className="ml-2 cursor-pointer">
             Mir ist bewusst, dass ich mit einem ki-gestützten Chatbot und nicht mit einer echten
             Person kommuniziere.
           </label>
