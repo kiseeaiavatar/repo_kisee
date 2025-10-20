@@ -8,13 +8,18 @@ import {
   VoiceChatTransport,
   VoiceEmotion,
 } from "@heygen/streaming-avatar";
-import { VoiceAssistantControlBar, useRoomContext } from "@livekit/components-react";
-import { RoomEvent } from "livekit-client";
+import {
+  VoiceAssistantControlBar,
+  useRoomContext,
+  useTrackToggle,
+} from "@livekit/components-react";
+import { RoomEvent, Track } from "livekit-client";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import ConversationContext from "../../conversation-context";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
+import { useStreamingAvatarContext } from "./logic/context";
 import { useStreamingAvatarSession } from "./logic/useStreamingAvatarSession";
 import { useTextChat } from "./logic/useTextChat";
 
@@ -50,6 +55,7 @@ const HEYGEN_TEXT_WORD_COUNT = 10;
 
 function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, sessionState, stopAvatar, stream } = useStreamingAvatarSession();
+  const { isAvatarTalking } = useStreamingAvatarContext();
   const { setMessages } = useContext(ConversationContext);
 
   const { repeatMessageSync } = useTextChat();
@@ -69,9 +75,23 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     };
   }, [room, stopAvatar]);
 
+  const { toggle: toggleMic } = useTrackToggle({
+    source: Track.Source.Microphone,
+  });
+
   useEffect(() => {
     setMessages(messages);
   });
+
+  useEffect(() => {
+    if (isAvatarTalking) {
+      // force mic off while avatar is talking to prevent agent from picking up user reactions and generating new text too early
+      toggleMic(false);
+    } else {
+      // let users talk once avatar finished
+      toggleMic(true);
+    }
+  }, [isAvatarTalking, toggleMic]);
 
   const mediaStream = useRef<HTMLVideoElement>(null);
 
