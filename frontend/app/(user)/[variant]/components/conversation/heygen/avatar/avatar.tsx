@@ -19,12 +19,12 @@ import { useTextChat } from "./logic/useTextChat";
 
 const AVATARS = [
   {
-    avatar_id: "Anastasia_Chair_Sitting_public",
-    name: "Anastasia Chair",
+    avatar_id: "Marianne_Chair_Sitting_public",
+    name: "Marianne Chair",
   },
   {
-    avatar_id: "Anthony_Chair_Sitting_public",
-    name: "Anthony Chair",
+    avatar_id: "Pedro_Chair_Sitting_public",
+    name: "Pedro Chair",
   },
 ];
 
@@ -184,28 +184,29 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]); // we don't want enqueueChunk here
 
-  /* TODO
-   * - avatar select */
-
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex flex-col rounded-xl bg-primary-400 overflow-hidden text-white">
         <div className="relative w-full aspect-video overflow-hidden flex flex-col items-center justify-center">
-          {sessionState !== StreamingAvatarSessionState.INACTIVE ? (
+          {sessionState === StreamingAvatarSessionState.CONNECTED ? (
             <AvatarVideo ref={mediaStream} />
           ) : (
             <>
-              <div className="flex flex-auto">
+              <div className="flex flex-col items-center">
                 <Image
                   className="m-auto"
-                  src="/avatar-1.png"
-                  alt="avatar-1"
+                  src={`/avatar-variant-${avatar + 1}.jpg`}
+                  alt={`avatar-variant-${avatar + 1}`}
                   width={512}
                   height={512}
                   style={{ width: "512px", height: "512px" }}
                   priority
                 />
-                <div>Lade Avatar...</div>
+                <div className="p-4">
+                  Einen Moment Geduld, bitte.
+                  <br />
+                  Avatar wird geladen...
+                </div>
               </div>
             </>
           )}
