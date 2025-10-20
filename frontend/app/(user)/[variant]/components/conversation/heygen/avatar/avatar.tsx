@@ -8,9 +8,10 @@ import {
   VoiceChatTransport,
   VoiceEmotion,
 } from "@heygen/streaming-avatar";
-import { VoiceAssistantControlBar } from "@livekit/components-react";
+import { VoiceAssistantControlBar, useRoomContext } from "@livekit/components-react";
+import { RoomEvent } from "livekit-client";
 import Image from "next/image";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import ConversationContext from "../../conversation-context";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
@@ -42,23 +43,31 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
   sttSettings: {
     provider: STTProvider.DEEPGRAM,
   },
+  activityIdleTimeout: 3599, // one hour
 };
 
 const HEYGEN_TEXT_WORD_COUNT = 10;
 
 function InteractiveAvatar({ avatar }: { avatar: number }) {
-  const { initAvatar, startAvatar, stopAvatar, sessionState, stream } = useStreamingAvatarSession();
+  const { initAvatar, startAvatar, sessionState, stopAvatar, stream } = useStreamingAvatarSession();
   const { setMessages } = useContext(ConversationContext);
 
   const { repeatMessageSync } = useTextChat();
 
-  const [config] = useState<StartAvatarRequest>({
-    ...DEFAULT_CONFIG,
-    avatarName: AVATARS[avatar].avatar_id,
-  });
-
   const { accessToken: heygenToken } = useHeygenAccessToken();
   const { messages } = useChatAndTranscription();
+
+  const room = useRoomContext();
+
+  useEffect(() => {
+    const onDisconnected = () => {
+      stopAvatar();
+    };
+    room.on(RoomEvent.Disconnected, onDisconnected);
+    return () => {
+      room.off(RoomEvent.Disconnected, onDisconnected);
+    };
+  }, [room, stopAvatar]);
 
   useEffect(() => {
     setMessages(messages);
@@ -70,25 +79,28 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     async (token: string) => {
       try {
         initAvatar(token);
-        await startAvatar(config);
+        await startAvatar({
+          ...DEFAULT_CONFIG,
+          avatarName: AVATARS[avatar].avatar_id,
+        });
       } catch (error) {
         console.error("Error starting avatar session:", error);
       }
     },
-    [initAvatar, startAvatar, config]
+    [initAvatar, startAvatar, avatar]
   );
 
   useEffect(() => {
     if (sessionState === StreamingAvatarSessionState.INACTIVE && heygenToken) {
       startSessionV2(heygenToken);
     }
-  }, [heygenToken, sessionState, startSessionV2, stopAvatar]);
+  }, [heygenToken, sessionState, startSessionV2]);
 
   useEffect(() => {
     if (stream && mediaStream.current) {
       mediaStream.current.srcObject = stream;
       mediaStream.current.onloadedmetadata = () => {
-        mediaStream.current!.play();
+        mediaStream.current?.play();
       };
     }
   }, [mediaStream, stream]);

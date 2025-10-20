@@ -49,7 +49,6 @@ export default function Conversation({ variant, avatar, subjectId, onCancel }: C
   useEffect(() => {
     const onDisconnected = () => {
       onCancel?.();
-      stopAvatar();
       refreshConnectionDetails();
     };
     const onMediaDevicesError = (error: Error) => {
