@@ -145,7 +145,8 @@ export default function Conversation({ variant, avatar, subjectId, onCancel }: C
       window.removeEventListener("beforeunload", handleTabClose);
       window.removeEventListener("pagehide", handlePageHide);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run only on initial render
 
   const handleCancel = () => {
     room.disconnect();

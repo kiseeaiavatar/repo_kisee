@@ -26,7 +26,6 @@ function ProcessItem({
   desc?: string;
 }) {
   const bg = done ? "bg-green-500" : "bg-primary-200";
-  const checkmark = done ? "check-circle-filled" : "check-circle";
   return (
     <div className="flex items-center">
       <div

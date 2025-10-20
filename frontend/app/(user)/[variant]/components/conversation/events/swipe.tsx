@@ -46,7 +46,6 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
 
     const props = {
       src: parsedItem.img,
-      alt: parsedItem.img,
       fill: true,
       className: "object-cover",
       unoptimized: false,
@@ -55,7 +54,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
     if (parsedItem.img.startsWith("http")) {
       props.unoptimized = true;
     }
-    return <Image {...props} />;
+    return <Image {...props} alt={parsedItem.img} />;
   };
 
   const itemText = () => {
