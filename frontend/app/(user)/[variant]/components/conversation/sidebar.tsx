@@ -1,4 +1,5 @@
 import { Button } from "@/components/Button";
+import { useLocalStorage } from "@/lib/utils";
 import Image from "next/image";
 import ProcessOverview from "./process-overview";
 
@@ -8,6 +9,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ chapter, onCancel }: SidebarProps) {
+  const [devMode] = useLocalStorage("kisee:debug", false);
+
   return (
     <div className="bg-primary-400 rounded-r-3xl p-4 flex flex-col justify-between h-full">
       <div className="flex-none">
@@ -16,12 +19,20 @@ export default function Sidebar({ chapter, onCancel }: SidebarProps) {
       <div className="text-primary-200">
         <h4 className="font-semibold text-xl text-center">Gesprächsthemen</h4>
         <ProcessOverview />
-        <br />
-        <h4 className="font-semibold">debug: {chapter}</h4>
+        {devMode && (
+          <>
+            <br />
+            <h4 className="font-semibold">debug: {chapter}</h4>
+          </>
+        )}
       </div>
-      <Button kind="primary" onClick={onCancel}>
-        Abbrechen
-      </Button>
+      <div>
+        {devMode && (
+          <Button kind="primary" onClick={onCancel}>
+            Abbrechen
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

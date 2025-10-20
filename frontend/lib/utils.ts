@@ -1,6 +1,7 @@
 import type { ReceivedChatMessage, TextStreamData } from "@livekit/components-react";
 import { type ClassValue, clsx } from "clsx";
 import { Room } from "livekit-client";
+import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 export const CONFIG_ENDPOINT = process.env.NEXT_PUBLIC_APP_CONFIG_ENDPOINT;
@@ -29,3 +30,28 @@ export function transcriptionToChatMessage(
           ),
   };
 }
+
+function getStorageValue<T>(key: string, defaultValue: T) {
+  // getting stored value
+  const saved = localStorage.getItem(key);
+  try {
+    const initial: T | undefined = saved && JSON.parse(saved);
+    return initial || defaultValue;
+  } catch {
+    console.error(`Could not parse "${saved}"`);
+    return defaultValue;
+  }
+}
+
+export const useLocalStorage = <T>(key: string, defaultValue: T) => {
+  const [value, setValue] = useState(() => {
+    return getStorageValue(key, defaultValue);
+  });
+
+  useEffect(() => {
+    // storing input name
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
+};
