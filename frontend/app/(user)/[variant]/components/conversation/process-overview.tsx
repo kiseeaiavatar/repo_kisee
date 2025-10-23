@@ -2,13 +2,34 @@ import Image from "next/image";
 
 export default function ProcessOverview() {
   return (
-    <div className="mt-4 mx-6 grid grid-cols-1 gap-1">
+    <div className="mt-4 mx-6 flex flex-col items-center">
       <ProcessItem icon="life" title="Mein Leben" desc="Bereich 1" />
-      <span className="text-center text-3xl">🠓</span>
+      <Image
+        src={`/arrow-down.svg`}
+        alt="arrow down"
+        width={15}
+        height={26}
+        style={{ width: "15px", height: "26px" }}
+        className="m-3"
+      />
       <ProcessItem icon="users" title="Selbstbild" desc="Bereich 2" />
-      <span className="text-center text-3xl">🠓</span>
+      <Image
+        src={`/arrow-down.svg`}
+        alt="arrow down"
+        width={15}
+        height={26}
+        style={{ width: "15px", height: "26px" }}
+        className="m-3"
+      />
       <ProcessItem icon="shooting-star" title="Tätigkeitsfelder" desc="Bereich 3" />
-      <span className="text-center text-3xl">🠓</span>
+      <Image
+        src={`/arrow-down.svg`}
+        alt="arrow down"
+        width={15}
+        height={26}
+        style={{ width: "15px", height: "26px" }}
+        className="m-3"
+      />
       <ProcessItem icon="business" title="Berufliche Interessen" desc="Bereich 4" />
     </div>
   );
@@ -27,7 +48,7 @@ function ProcessItem({
 }) {
   const bg = done ? "bg-green-500" : "bg-primary-200";
   return (
-    <div className="flex items-center">
+    <div className="flex items-center w-full">
       <div
         className={`${bg} text-primary-500 rounded-3xl items-center flex-1 p-3 flex align-center`}
       >
