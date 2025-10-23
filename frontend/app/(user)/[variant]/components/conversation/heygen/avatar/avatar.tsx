@@ -55,7 +55,7 @@ const HEYGEN_TEXT_WORD_COUNT = 10;
 
 function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, sessionState, stopAvatar, stream } = useStreamingAvatarSession();
-  const { isAvatarTalking } = useStreamingAvatarContext();
+  const { avatarTalkingCnt } = useStreamingAvatarContext();
   const { setMessages } = useContext(ConversationContext);
 
   const { repeatMessageSync } = useTextChat();
@@ -84,14 +84,12 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
   });
 
   useEffect(() => {
-    if (isAvatarTalking) {
-      // force mic off while avatar is talking to prevent agent from picking up user reactions and generating new text too early
-      toggleMic(false);
-    } else {
-      // let users talk once avatar finished
+    if (avatarTalkingCnt == 0) {
       toggleMic(true);
+    } else {
+      toggleMic(false);
     }
-  }, [isAvatarTalking, toggleMic]);
+  }, [avatarTalkingCnt, toggleMic]);
 
   const mediaStream = useRef<HTMLVideoElement>(null);
 

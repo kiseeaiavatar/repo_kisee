@@ -22,6 +22,8 @@ export const useStreamingAvatarSession = () => {
     handleStreamingTalkingMessage,
     handleEndMessage,
     clearMessages,
+    incrementAvatarTalkingCnt,
+    decrementAvatarTalkingCnt,
   } = useStreamingAvatarContext();
 
   const init = useCallback(
@@ -100,9 +102,11 @@ export const useStreamingAvatarSession = () => {
       });
       avatarRef.current.on(StreamingEvents.AVATAR_START_TALKING, () => {
         setIsAvatarTalking(true);
+        incrementAvatarTalkingCnt();
       });
       avatarRef.current.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
         setIsAvatarTalking(false);
+        decrementAvatarTalkingCnt();
       });
       avatarRef.current.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
       avatarRef.current.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleStreamingTalkingMessage);
@@ -126,6 +130,8 @@ export const useStreamingAvatarSession = () => {
       handleStreamingTalkingMessage,
       handleEndMessage,
       setIsAvatarTalking,
+      decrementAvatarTalkingCnt,
+      incrementAvatarTalkingCnt,
     ]
   );
 
