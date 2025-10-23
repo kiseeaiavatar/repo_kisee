@@ -104,7 +104,7 @@ async def entrypoint(ctx: agents.JobContext):
             model="gpt-4o-mini-transcribe",
             api_version="2025-03-01-preview"
         ),
-        vad=silero.VAD.load(),
+        vad=silero.VAD.load(min_silence_duration=2.0),
         turn_detection=MultilingualModel(),
         allow_interruptions=False,
     )
