@@ -48,7 +48,7 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
   sttSettings: {
     provider: STTProvider.DEEPGRAM,
   },
-  activityIdleTimeout: 3599, // one hour
+  activityIdleTimeout: 900, // 15 minutes
 };
 
 const HEYGEN_TEXT_WORD_COUNT = 10;
