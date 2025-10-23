@@ -319,4 +319,7 @@ async def send_chapter(chapter_id: str):
         "type": "chapter",
         "chapter_id": chapter_id,
     }
-    await perform_rpc_with_payload(payload)
+    try:
+        await perform_rpc_with_payload(payload)
+    except Exception as e:
+        logger.error(f"Failed to send chapter: {str(e)}")
