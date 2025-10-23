@@ -15,7 +15,7 @@ import {
 } from "@livekit/components-react";
 import { RoomEvent, Track } from "livekit-client";
 import Image from "next/image";
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import ConversationContext from "../../conversation-context";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
@@ -57,6 +57,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, sessionState, stopAvatar, stream } = useStreamingAvatarSession();
   const { avatarTalkingCnt } = useStreamingAvatarContext();
   const { setMessages } = useContext(ConversationContext);
+  const [error, setError] = useState("");
 
   const { repeatMessageSync } = useTextChat();
 
@@ -101,8 +102,18 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
           ...DEFAULT_CONFIG,
           avatarName: AVATARS[avatar].avatar_id,
         });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Error starting avatar session:", error);
+        if (error.responseText) {
+          try {
+            const errResponse = JSON.parse(error.responseText);
+            setError(`${error} (${errResponse.message})`);
+          } catch {
+            setError(`${error} (unknown)`);
+          }
+        } else {
+          setError(`${error} (unexpected)`);
+        }
       }
     },
     [initAvatar, startAvatar, avatar]
@@ -236,6 +247,12 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
                   Einen Moment Geduld, bitte.
                   <br />
                   Avatar wird geladen...
+                  {error && (
+                    <>
+                      <br />
+                      {error}
+                    </>
+                  )}
                 </div>
               </div>
             </>
