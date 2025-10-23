@@ -53,6 +53,9 @@ type StreamingAvatarContextProps = {
 
   connectionQuality: ConnectionQuality;
   setConnectionQuality: (connectionQuality: ConnectionQuality) => void;
+  avatarTalkingCnt: number;
+  incrementAvatarTalkingCnt: () => void;
+  decrementAvatarTalkingCnt: () => void;
 };
 
 const StreamingAvatarContext = React.createContext<StreamingAvatarContextProps>({
@@ -80,6 +83,9 @@ const StreamingAvatarContext = React.createContext<StreamingAvatarContextProps>(
   setIsAvatarTalking: () => {},
   connectionQuality: ConnectionQuality.UNKNOWN,
   setConnectionQuality: () => {},
+  avatarTalkingCnt: 0,
+  incrementAvatarTalkingCnt: () => {},
+  decrementAvatarTalkingCnt: () => {},
 });
 
 const useStreamingAvatarSessionState = () => {
@@ -182,12 +188,23 @@ const useStreamingAvatarListeningState = () => {
 const useStreamingAvatarTalkingState = () => {
   const [isUserTalking, setIsUserTalking] = useState(false);
   const [isAvatarTalking, setIsAvatarTalking] = useState(false);
+  const [avatarTalkingCnt, setAvatarTalkingCnt] = useState(0);
+
+  function incrementAvatarTalkingCnt() {
+    setAvatarTalkingCnt((cnt) => cnt + 1);
+  }
+  function decrementAvatarTalkingCnt() {
+    setAvatarTalkingCnt((cnt) => cnt - 1);
+  }
 
   return {
     isUserTalking,
     setIsUserTalking,
     isAvatarTalking,
     setIsAvatarTalking,
+    avatarTalkingCnt,
+    incrementAvatarTalkingCnt,
+    decrementAvatarTalkingCnt,
   };
 };
 
