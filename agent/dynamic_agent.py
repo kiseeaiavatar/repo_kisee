@@ -153,13 +153,7 @@ class DynamicAgent(Agent):
             await self.session.say(user_instruction)
         else:
             if user_instruction:
-                instructions = (
-                    COMMON_INSTRUCTIONS
-                    + "\n\n"
-                    + ( self.config["agent_instructions"] or "" )
-                    + "\n\n"
-                    + ( self.config["user_instruction"] or "" )
-                )
+                instructions = self.config["user_instruction"]
                 print(f"generate first message: {instructions}")
                 await self.session.generate_reply(instructions=instructions)
             else:
