@@ -98,7 +98,7 @@ async def entrypoint(ctx: agents.JobContext):
         llm=openai.LLM.with_azure(
             azure_deployment=AZURE_OPENAI_DEPLOYMENT,
             api_version=AZURE_OPENAI_API_VERSION,
-            reasoning_effort="minimal"
+            # reasoning_effort="minimal" # required if using gpt-5
         ),
         stt = openai.STT.with_azure(
             model="gpt-4o-mini-transcribe",
