@@ -13,6 +13,7 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class EventType(str, Enum):
     SWIPE = "swipe"
+    SWIPE2 = "swipe2"
     RATING = "rating"
     LIFELINE= "lifeline"
     EVALUATION= "evaluation"

@@ -1,6 +1,13 @@
 import { Variant } from "./variants";
 
-export type EventType = "none" | "swipe" | "rating" | "lifeline" | "evaluation" | "chapter";
+export type EventType =
+  | "none"
+  | "swipe"
+  | "swipe2"
+  | "rating"
+  | "lifeline"
+  | "evaluation"
+  | "chapter";
 export type UserInstructionType = "none" | "dm";
 
 export interface Userinfo {

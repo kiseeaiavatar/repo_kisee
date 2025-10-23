@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { parseEventItem } from "./utils";
 
-interface SwipeEventProps {
+export interface SwipeEventProps {
   items: string[];
   onSubmit: (results: EventItemResult[]) => void;
 }
@@ -47,7 +47,7 @@ const SwipeEvent: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
     const props = {
       src: parsedItem.img,
       fill: true,
-      className: "object-cover",
+      className: "object-cover rounded-t-3xl",
       unoptimized: false,
     };
 

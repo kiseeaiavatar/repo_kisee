@@ -304,12 +304,15 @@ const AdminDashboard: React.FC = () => {
             >
               <option value="none">None</option>
               <option value="swipe">Swipe</option>
+              <option value="swipe2">Swipe2</option>
               <option value="rating">Rating</option>
               <option value="lifeline">Lifeline</option>
               <option value="evaluation">Evaluation</option>
             </TextField>
             {formData.event_type &&
-              (formData.event_type == "swipe" || formData.event_type == "rating") && (
+              (formData.event_type == "swipe" ||
+                formData.event_type == "swipe2" ||
+                formData.event_type == "rating") && (
                 <>
                   <TextField
                     fullWidth

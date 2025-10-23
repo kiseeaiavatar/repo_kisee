@@ -206,6 +206,16 @@ class DynamicAgent(Agent):
                                        )
                     )
                     print(f"swipe event result {event_result}")
+                elif event_type == "swipe2":
+                    event_result = await show_swipe2_event(agent_config, self.session.userdata.to_dict())
+                    await self.session.generate_reply(
+                        user_input=f"swipe2 results: {event_result}",
+                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
+                                       "Wähle die drei am höchsten bewerteten Elemente aus."
+                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
+                                       )
+                    )
+                    print(f"swipe2 event result {event_result}")
                 elif event_type == "evaluation":
                     event_result = await show_evaluation_event(agent_config, self.session.userdata.to_dict())
                     print(f"evaluation event result {event_result}")
@@ -255,6 +265,28 @@ async def show_swipe_event(
     event_input = agent_config["event_input"]
     payload={
         "type": "swipe",
+        "description": event_input["description"],
+        "items": event_input["items"],
+        "chapter_id": chapter_id,
+        "userdata": userdata
+    }
+    result = await perform_rpc_with_payload(payload)
+    return result
+
+async def show_swipe2_event(
+    agent_config: dict,
+    userdata: dict,
+) -> dict:
+    logger.debug("show_swipe2_event")
+    chapter_id = agent_config["chapter_id"]
+
+    if "event_input" not in agent_config:
+        logger.error("event_input missing in agent_config")
+        return
+
+    event_input = agent_config["event_input"]
+    payload={
+        "type": "swipe2",
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
