@@ -20,28 +20,28 @@
 }
 
 .lk-agent-control-bar .lk-button svg {
-  fill: white;
+    fill: #3E0BB6;
 }
 
 .lk-agent-control-bar .lk-button-menu::after {
-  border-color: white;
+    border-color: #3E0BB6;
 }
 
 .lk-audio-bar-visualizer .lk-audio-bar.lk-highlighted {
-  background-color: white;
+    background-color: #3E0BB6;
 }
 
 .lk-device-menu {
-  background-color: #3E0BB6;
-  color: white;
+    background-color: #3E0BB6;
+    color: white;
 }
 
 .chat-message-list * {
-  overflow-anchor: none;
+    overflow-anchor: none;
 }
 .chat-scroll-anchor {
-  overflow-anchor: auto;
-  height: 1px;
+    overflow-anchor: auto;
+    height: 1px;
 }
 
 input[type="range"] {
