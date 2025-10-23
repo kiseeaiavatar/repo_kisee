@@ -102,7 +102,8 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
           ...DEFAULT_CONFIG,
           avatarName: AVATARS[avatar].avatar_id,
         });
-      } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
         console.error("Error starting avatar session:", error);
         if (error.responseText) {
           try {
