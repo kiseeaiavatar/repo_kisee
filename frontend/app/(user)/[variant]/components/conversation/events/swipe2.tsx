@@ -29,7 +29,6 @@ const Swipe2Event: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
           rating: results[idx],
         };
       });
-      console.log("swipe2 finalResults", finalResults);
       onSubmit(finalResults);
     }
   };
