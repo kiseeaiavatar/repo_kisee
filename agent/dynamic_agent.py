@@ -121,17 +121,17 @@ class DynamicAgent(Agent):
         print(f"current_agent_idx: {userdata.current_agent_idx}")
 
         # add the previous agent's chat history to the current agent
-        if isinstance(userdata.prev_agent, Agent):
-            print("add previous chat history")
-            print(f"prev chat ctx: {userdata.prev_agent.chat_ctx.to_dict()}")
-            truncated_chat_ctx = userdata.prev_agent.chat_ctx.copy(
-                exclude_instructions=True, # discard system/developer messages
-                exclude_function_call=False,
-            ).truncate(max_items=6)
-            existing_ids = {item.id for item in chat_ctx.items}
-            items_copy = [item for item in truncated_chat_ctx.items if item.id not in existing_ids]
-            chat_ctx.items.extend(items_copy)
-            print("chat ctx copied")
+        # if isinstance(userdata.prev_agent, Agent):
+        #     print("add previous chat history")
+        #     print(f"prev chat ctx: {userdata.prev_agent.chat_ctx.to_dict()}")
+        #     truncated_chat_ctx = userdata.prev_agent.chat_ctx.copy(
+        #         exclude_instructions=True, # discard system/developer messages
+        #         exclude_function_call=False,
+        #     ).truncate(max_items=6)
+        #     existing_ids = {item.id for item in chat_ctx.items}
+        #     items_copy = [item for item in truncated_chat_ctx.items if item.id not in existing_ids]
+        #     chat_ctx.items.extend(items_copy)
+        #     print("chat ctx copied")
 
         # add the user data as assistant message
         print(f"userdata: {userdata.summarize()}")
