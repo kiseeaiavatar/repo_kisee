@@ -186,7 +186,7 @@ export default function Conversation({ variant, avatar, subjectId, onCancel }: C
             />
           </div>
           {eventData && (
-            <div className="shadow-[-4px_4px_16px_rgba(0,0,0,0.15)] bg-primary-200 text-primary-500 flex-1 rounded-l-3xl p-4">
+            <div className="shadow-[-4px_4px_16px_rgba(0,0,0,0.15)] bg-primary-200 text-primary-500 flex-1 rounded-l-3xl p-4 flex">
               <EventContainer
                 eventType={eventData.type}
                 eventInput={eventData.input}

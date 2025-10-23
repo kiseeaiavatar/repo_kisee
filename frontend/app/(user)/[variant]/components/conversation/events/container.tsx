@@ -4,6 +4,7 @@ import EvaluationEvent from "./evaluation";
 import LifelineEvent from "./lifeline";
 import RatingEvent from "./rating";
 import SwipeEvent from "./swipe";
+import Swipe2Event from "./swipe2";
 
 interface EventContainerProps {
   eventType: EventType;
@@ -20,6 +21,9 @@ const getEvent = (
     case "swipe":
       if (!eventInput.items) return <p className="text-red">Missing input data</p>;
       return <SwipeEvent items={eventInput.items} onSubmit={onSubmit} />;
+    case "swipe2":
+      if (!eventInput.items) return <p className="text-red">Missing input data</p>;
+      return <Swipe2Event items={eventInput.items} onSubmit={onSubmit} />;
     case "rating":
       if (!eventInput.items) return <p className="text-red">Missing input data</p>;
       return <RatingEvent items={eventInput.items} onSubmit={onSubmit} />;
@@ -46,7 +50,7 @@ const EventContainer: React.FC<EventContainerProps> = ({ eventType, eventInput, 
   };
 
   return (
-    <div className="widget-container px-3 py-4 text-center flex flex-col h-full">
+    <div className="px-3 py-4 text-center flex flex-col justify-center w-full">
       {eventInput.chapter_id && (
         <h1 className="event-heading text-2xl font-bold mb-4">{eventInput.chapter_id}</h1>
       )}

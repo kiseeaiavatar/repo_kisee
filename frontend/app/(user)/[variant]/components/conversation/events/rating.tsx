@@ -60,12 +60,12 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col">
       <p>
         {page + 1} / {Math.ceil(items.length / ITEMS_PER_PAGE)}
       </p>
 
-      <div className="mt-6 grid grid-cols-[40%_15%_15%_15%_15%] gap-y-4 items-center">
+      <div className="my-6 grid grid-cols-[40%_15%_15%_15%_15%] gap-y-4 items-center">
         <div></div>
         <div className="text-xs">
           Stimmt
@@ -144,7 +144,7 @@ const RatingEvent: React.FC<RatingEventProps> = ({ items, onSubmit }) => {
       >
         {isLastPage() ? "Abschließen" : "Weiter"}
       </Button>
-      {!allItemsRated && <span>Bitte bewerte alle Aussagen</span>}
+      <span className={`${!allItemsRated ? "" : "invisible"}`}>Bitte bewerte alle Aussagen</span>
     </div>
   );
 };
