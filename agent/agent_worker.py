@@ -97,7 +97,8 @@ async def entrypoint(ctx: agents.JobContext):
         userdata=userdata,
         llm=openai.LLM.with_azure(
             azure_deployment=AZURE_OPENAI_DEPLOYMENT,
-            api_version=AZURE_OPENAI_API_VERSION
+            api_version=AZURE_OPENAI_API_VERSION,
+            reasoning_effort="minimal"
         ),
         stt = openai.STT.with_azure(
             model="gpt-4o-mini-transcribe",
@@ -105,7 +106,7 @@ async def entrypoint(ctx: agents.JobContext):
         ),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
-        allow_interruptions=False
+        allow_interruptions=False,
     )
 
     await ctx.connect()

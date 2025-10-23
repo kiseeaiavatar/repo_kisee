@@ -19,7 +19,7 @@ services:
   agent:
     build:
       context: ./agent
-    command: ["python", "agent_worker.py", "dev"]
+    command: ["dev"]
     env_file: ./agent/.env
     environment:
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
