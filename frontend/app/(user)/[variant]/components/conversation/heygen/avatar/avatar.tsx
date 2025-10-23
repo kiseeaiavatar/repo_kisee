@@ -135,7 +135,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
   }, [mediaStream, stream]);
 
   async function sendToHeygen(text: string) {
-    console.log(`Sending: ${text}`);
+    console.log(new Date().toLocaleTimeString(), `Sending: ${text}`);
     return repeatMessageSync(text);
   }
 
@@ -177,7 +177,7 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
   }
 
   function enqueueChunk(id: string, text: string) {
-    console.log("enqueue chunk", id, text);
+    console.log(new Date().toLocaleTimeString(), "enqueue chunk", id, text);
     const wasEmpty = queueRef.current.length === 0;
     queueRef.current.push({ id, text });
     if (wasEmpty && !isFlushingRef.current) {
