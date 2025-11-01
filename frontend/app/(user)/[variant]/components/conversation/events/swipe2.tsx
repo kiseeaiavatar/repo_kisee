@@ -143,7 +143,7 @@ const Swipe2Event: React.FC<SwipeEventProps> = ({ items, onSubmit }) => {
             {page == results.length - 1 ? "Abschließen" : "Weiter"}
           </Button>
           <span className={`${results[page] == 0 ? "" : "invisible"}`}>
-            Bitte treffe eine Auswahl
+            Bitte triff eine Auswahl
           </span>
         </div>
       </div>

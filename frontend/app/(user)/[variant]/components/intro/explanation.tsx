@@ -27,7 +27,7 @@ export default function Explanation({ onDone }: { onDone: () => void }) {
         )}
         {cnt === 1 && (
           <p>
-            Das folgenden Gespräch wird ungefähr <strong>60 Minuten</strong> dauern.
+            Das folgende Gespräch wird ungefähr <strong>60 Minuten</strong> dauern.
             <br />
             <br /> Du brauchst <strong>kein Vorwissen</strong>.<br /> Es geht um dich,{" "}
             <strong>deine Interessen</strong> und <strong>deine Persönlichkeit</strong>.
