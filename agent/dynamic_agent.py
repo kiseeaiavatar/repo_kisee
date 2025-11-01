@@ -116,9 +116,9 @@ class DynamicAgent(Agent):
         print(f"entering new agent {chapter_id}")
 
         userdata: UserData = self.session.userdata
-
-        chat_ctx = self.chat_ctx.copy()
         print(f"current_agent_idx: {userdata.current_agent_idx}")
+
+        # chat_ctx = self.chat_ctx.copy()
 
         # add the previous agent's chat history to the current agent
         # if isinstance(userdata.prev_agent, Agent):
@@ -134,16 +134,16 @@ class DynamicAgent(Agent):
         #     print("chat ctx copied")
 
         # add the user data as assistant message
-        print(f"userdata: {userdata.summarize()}")
-        chat_ctx.add_message(
-            role="system",  # role=system works for OpenAI's LLM and Realtime API
-            content=(
-                    f"Aktuelle Nutzerdaten sind {userdata.summarize()}\n"
-            ),
-        )
-        print(f"chat ctx: {chat_ctx.to_dict()}")
-        await self.update_chat_ctx(chat_ctx)
-        print("chat ctx updated")
+        # print(f"userdata: {userdata.summarize()}")
+        # chat_ctx.add_message(
+        #     role="system",  # role=system works for OpenAI's LLM and Realtime API
+        #     content=(
+        #             f"Aktuelle Nutzerdaten sind {userdata.summarize()}\n"
+        #     ),
+        # )
+        # print(f"chat ctx: {chat_ctx.to_dict()}")
+        # await self.update_chat_ctx(chat_ctx)
+        # print("chat ctx updated")
 
         await send_chapter(chapter_id)
 
