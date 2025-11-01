@@ -177,43 +177,25 @@ class DynamicAgent(Agent):
                 if event_type == "lifeline":
                     event_result = await show_lifeline_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
-                        user_input=f"lifeline results: {event_result}",
-                        instructions= ("Ignoriere die Ereignisse bei 0 und 100."
-                                       "Befrage den User etwas genauer zu den Eingaben."
-                                       "Jede Eingabe enthält ein Alter (item) und die "
-                                       "subjektiv empfundene Stärke eines Lebensereignisses."
-                                       "Runde das Alter immer ab."
-                                       )
+                        user_input=f"{event_result}"
                     )
                     print(f"lifeline result {event_result}")
                 elif event_type == "rating":
                     event_result = await show_rating_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
-                        user_input=f"rating results: {event_result}",
-                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
-                                       "Wähle die drei am höchsten bewerteten Elemente aus."
-                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
-                                       )
+                        user_input=f"{event_result}"
                     )
                     print(f"rating event result {event_result}")
                 elif event_type == "swipe":
                     event_result = await show_swipe_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
-                        user_input=f"swipe results: {event_result}",
-                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
-                                       "Wähle die drei am höchsten bewerteten Elemente aus."
-                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
-                                       )
+                        user_input=f"{event_result}"
                     )
                     print(f"swipe event result {event_result}")
                 elif event_type == "swipe2":
                     event_result = await show_swipe2_event(agent_config, self.session.userdata.to_dict())
                     await self.session.generate_reply(
-                        user_input=f"swipe2 results: {event_result}",
-                        instructions= ("Ignoriere Ergebnisse mit Wert 0."
-                                       "Wähle die drei am höchsten bewerteten Elemente aus."
-                                       "Befrage den Nutzer etwas genauer zu diesen Elementen"
-                                       )
+                        user_input=f"{event_result}"
                     )
                     print(f"swipe2 event result {event_result}")
                 elif event_type == "evaluation":
