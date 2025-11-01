@@ -40,7 +40,7 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
   knowledgeId: undefined,
   voice: {
     rate: 1.5,
-    emotion: VoiceEmotion.FRIENDLY,
+    emotion: VoiceEmotion.SERIOUS,
     model: ElevenLabsModel.eleven_flash_v2_5,
   },
   language: "de",
