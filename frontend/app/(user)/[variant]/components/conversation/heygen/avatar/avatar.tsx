@@ -52,6 +52,7 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
 };
 
 const HEYGEN_TEXT_WORD_COUNT = 10;
+const QUEUE_SWITCH_GRACE_PERIOD_MS = 1500;
 
 function InteractiveAvatar({ avatar }: { avatar: number }) {
   const { initAvatar, startAvatar, sessionState, stopAvatar, stream } = useStreamingAvatarSession();
@@ -135,83 +136,73 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
     }
   }, [mediaStream, stream]);
 
-  async function sendToHeygen(text: string) {
-    console.log(new Date().toLocaleTimeString(), `Sending: ${text}`);
-    return repeatMessageSync(text);
-  }
-
-  // Tracks how many words have already been sent per message
+  const sendToHeygen = useCallback(
+    async function (text: string, id: string) {
+      console.log(new Date().toLocaleTimeString(), " ===> sending message", id, text);
+      return repeatMessageSync(text);
+    },
+    [repeatMessageSync]
+  );
+  // Track words already sent per message
   const sentWordCountRef = useRef<Record<string, number>>({});
-  // Debounce timers for flushing leftovers
+  // Per-message debounce timers for leftover flush
   const flushTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
-  // Outgoing queue for buffered delivery. Collects chunks which are sent out every X ms.
-  // This avoids disordering caused by overlapping async calls.
-  const queueRef = useRef<{ id: string; text: string }[]>([]);
+
+  // Message ordering and queuing
+  const messageQueuesRef = useRef<Map<string, { text: string }[]>>(new Map());
+  const messageOrderRef = useRef<string[]>([]);
+  const currentMessageRef = useRef<string | null>(null);
+  const switchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isFlushingRef = useRef(false);
 
-  // Interval fallback (batch flush every 500ms)
-  useEffect(() => {
-    const interval = setInterval(() => flushQueue(), 1000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState]); // no flushQueue here
-
-  function flushQueue() {
-    if (sessionState !== StreamingAvatarSessionState.CONNECTED) return;
-    if (queueRef.current.length === 0 || isFlushingRef.current) return;
-
-    isFlushingRef.current = true;
-    const batch = [...queueRef.current];
-    queueRef.current = [];
-
-    const mergedText = batch.reduce((acc, chunk) => {
-      return `${acc} ${chunk.text}`;
-    }, "");
-
-    if (mergedText.trim().length > 0) {
-      sendToHeygen(mergedText).finally(() => {
-        isFlushingRef.current = false;
-      });
-    } else {
-      isFlushingRef.current = false;
-    }
-  }
-
+  // --- Enqueue chunks ---
   function enqueueChunk(id: string, text: string) {
     console.log(new Date().toLocaleTimeString(), "enqueue chunk", id, text);
-    const wasEmpty = queueRef.current.length === 0;
-    queueRef.current.push({ id, text });
-    if (wasEmpty && !isFlushingRef.current) {
-      // send immediately if queue was empty before
-      // but only if we're not already flushing
-      flushQueue();
+
+    if (!messageQueuesRef.current.has(id)) {
+      messageQueuesRef.current.set(id, []);
+      messageOrderRef.current.push(id);
+    }
+
+    messageQueuesRef.current.get(id)!.push({ text });
+
+    // Cancel pending switch if new chunks arrive for current message
+    if (switchTimerRef.current && currentMessageRef.current === id) {
+      clearTimeout(switchTimerRef.current);
+      switchTimerRef.current = null;
+    }
+
+    // Start flushing if idle
+    if (!isFlushingRef.current) {
+      flushNextMessageQueue();
     }
   }
 
+  // --- Message watcher ---
   useEffect(() => {
     messages
       .filter((msg) => {
-        // filter user messages (and those without a `from` property)
+        // filter non-user messages
         const isUser = msg.from?.isLocal ?? true;
         return !isUser;
       })
       .forEach((msg) => {
-        // split into whole words and filter empty strings
         const words = msg.message.trim().split(/\s+/).filter(Boolean);
         let alreadySent = sentWordCountRef.current[msg.id] ?? 0;
 
-        // Only send in blocks of X, but require at least X+1 words ahead
+        // Send full 5-word chunks
         while (words.length - alreadySent >= HEYGEN_TEXT_WORD_COUNT + 1) {
           const chunk = words.slice(alreadySent, alreadySent + HEYGEN_TEXT_WORD_COUNT).join(" ");
           enqueueChunk(msg.id, chunk);
-          alreadySent += HEYGEN_TEXT_WORD_COUNT; // increment local counter
-          sentWordCountRef.current[msg.id] = alreadySent; // update ref
+          alreadySent += HEYGEN_TEXT_WORD_COUNT;
+          sentWordCountRef.current[msg.id] = alreadySent;
         }
 
-        // Debounced flush for leftovers (<X words or trailing incomplete word)
+        // Debounced flush for leftovers
         if (flushTimersRef.current[msg.id]) {
           clearTimeout(flushTimersRef.current[msg.id]);
         }
+
         flushTimersRef.current[msg.id] = setTimeout(() => {
           const sent = sentWordCountRef.current[msg.id] ?? 0;
           if (words.length > sent) {
@@ -224,7 +215,65 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
         }, 500);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]); // we don't want enqueueChunk here
+  }, [messages]);
+
+  // --- Flush logic ---
+  const flushNextMessageQueue = useCallback(
+    async function () {
+      if (sessionState !== StreamingAvatarSessionState.CONNECTED) return;
+      if (isFlushingRef.current) return;
+
+      const currentId = currentMessageRef.current || messageOrderRef.current[0];
+      if (!currentId) return;
+
+      const queue = messageQueuesRef.current.get(currentId);
+      if (!queue || queue.length === 0) {
+        // queue empty → wait before moving on
+        if (!switchTimerRef.current) {
+          switchTimerRef.current = setTimeout(() => {
+            const q = messageQueuesRef.current.get(currentId);
+            if (!q || q.length === 0) {
+              // finalize and move to next message
+              messageQueuesRef.current.delete(currentId);
+              messageOrderRef.current.shift();
+              currentMessageRef.current = null;
+              switchTimerRef.current = null;
+              flushNextMessageQueue(); // continue with next message
+            } else {
+              // new chunks arrived during grace period → continue with same message
+              switchTimerRef.current = null;
+              flushNextMessageQueue();
+            }
+          }, QUEUE_SWITCH_GRACE_PERIOD_MS);
+        }
+        return;
+      }
+
+      // process next batch
+      isFlushingRef.current = true;
+      currentMessageRef.current = currentId;
+
+      const batch = queue.splice(0, queue.length);
+      const mergedText = batch.map((c) => c.text).join(" ");
+
+      if (mergedText.trim().length > 0) {
+        try {
+          await sendToHeygen(mergedText, currentId);
+        } catch (err) {
+          console.error("Failed to send chunk:", err);
+        }
+      }
+
+      isFlushingRef.current = false;
+      flushNextMessageQueue(); // continue draining current message
+    },
+    [sendToHeygen, sessionState]
+  );
+
+  useEffect(() => {
+    if (sessionState !== StreamingAvatarSessionState.CONNECTED) return;
+    flushNextMessageQueue();
+  }, [sessionState, flushNextMessageQueue]);
 
   return (
     <div className="w-full flex flex-col gap-4">
