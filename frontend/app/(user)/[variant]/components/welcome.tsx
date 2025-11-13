@@ -32,6 +32,12 @@ export default function Welcome({ onDone }: WelcomeProps) {
         <Button kind="secondary" onClick={onDone} className="w-full mb-16">
           Los geht´s!
         </Button>
+        <p className="">
+          Photo by <a href="https://unsplash.com/@silverkblack">Vitaly Gariev</a> on{" "}
+          <a href="https://unsplash.com/photos/group-of-friends-taking-a-selfie-in-a-classroom-CO1bCIkzT5M">
+            Unsplash
+          </a>
+        </p>
       </div>
     </div>
   );

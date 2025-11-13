@@ -21,14 +21,16 @@ export default function TsAndCs({ onDone }: { onDone: () => void }) {
             onChange={(e) => setTermsAccepted(e.target.checked)}
           />
           <label htmlFor="cb-accept-terms" className="ml-2 cursor-pointer">
-            Ich bin 18 oder älter und habe die{" "}
+            Im Rahmen unseres Berufsberatungsgesprächs erfassen wir verschiedene Daten, welche für
+            eine zielgerichtete Berufsberatung erforderlich sind. Diese Informationen helfen uns
+            berufliche Interessen und Fähigkeiten besser zu verstehen und Ihnen passende Optionen
+            anzubieten. Durch Ihre Zustimmung erklären Sie sich einverstanden mit der Verarbeitung
+            Ihrer Daten für diese Zwecke gemäß unseres{" "}
             <a href="/terms_and_conditions" target="_blank" className="underline">
-              Datenschutzrichtlinien
-            </a>{" "}
-            gelesen und stimme zu.
+              Datenschutzkonzepts
+            </a>
           </label>
         </div>
-
         <div className="mt-8 flex flex-row">
           <input
             type="checkbox"
@@ -37,7 +39,7 @@ export default function TsAndCs({ onDone }: { onDone: () => void }) {
             onChange={(e) => setAckAI(e.target.checked)}
           />
           <label htmlFor="cb-acknowledge-ai" className="ml-2 cursor-pointer">
-            Mir ist bewusst, dass ich mit einem ki-gestützten Chatbot und nicht mit einer echten
+            Mir ist bewusst, dass ich mit einer künstlichen Intelligenz und nicht mit einer echten
             Person kommuniziere.
           </label>
         </div>
