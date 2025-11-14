@@ -1,6 +1,7 @@
 # LiveKit Voice Agent
 
-This is the voice agent component of the LiveKit Kisee system. It handles the conversation flow and interacts with users through voice.
+This is the voice agent component of the LiveKit Kisee system.
+It handles the conversation flow and interacts with users through text or voice.
 
 ## Prerequisites
 
@@ -33,20 +34,24 @@ pip install -r requirements.txt
    Create a `.env` file in the agent directory with:
 
 ```
-AZURE_API_KEY=your_azure_api_key
-AZURE_OPENAI_REGION=your_azure_region
-AZURE_OPENAI_ENDPOINT=your_azure_endpoint
-AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name
-AZURE_STT_API_KEY=your_stt_api_key
-AZURE_STT_REGION=your_stt_region
-AZURE_TTS_API_KEY=your_tts_api_key
-AZURE_TTS_REGION=your_tts_region
-AZURE_OPENAI_API_VERSION=your_api_version
-AZURE_OPENAI_TTS_API_KEY=your_tts_api_key
-AZURE_OPENAI_TTS_MODEL=your_tts_model
-AZURE_OPENAI_STT_API_KEY=your_stt_api_key
-AZURE_OPENAI_STT_MODEL=your_stt_model
-PYTHON_ENV=development
+# LIVEKIT credentials
+LIVEKIT_URL="wss://your-project.livekit.cloud"
+LIVEKIT_API_KEY="..."
+LIVEKIT_API_SECRET="..."
+
+# MONGODB connection URL
+MONGODB_CONNECTION_STRING="mongodb://..."
+
+# AZURE OPENAI credentials/details
+AZURE_OPENAI_DEPLOYMENT="gpt-4o"
+AZURE_OPENAI_ENDPOINT="https://project-ai-foundry.cognitiveservices.azure.com/"
+AZURE_OPENAI_API_KEY="..."
+OPENAI_API_VERSION="2025-01-01-preview"
+
+# Common agent instructions, passed to EVERY agent
+COMMON_INSTRUCTIONS="..."
+
+PYTHON_ENV=local
 ```
 
 We add `PYTHON_ENV` as a suffix to the MongoDB database name.
@@ -208,11 +213,3 @@ agent/
 ├── requirements.txt    # Python dependencies
 └── README.md          # This file
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request

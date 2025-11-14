@@ -1,25 +1,21 @@
 # LiveKit Kisee
 
-A conversational agent system built with LiveKit that guides users through a series of preference collection steps using a dynamic state machine approach.
+A conversational agent system built with LiveKit that guides users through a series of chapters managed by an administrator.
+While the chapters could be about any topic in theory, the system currently focusses on job interviews.
 
 ## Architecture
 
-The system uses a single `DynamicAgent` that manages different states of the conversation, each with its own specific purpose:
-
-1. **Greeting**: Welcomes the user and collects their name
-2. **Food Preferences**: Collects food preferences using a rating system
-3. **Sport Preferences**: Collects sport preferences using a swipe interface
-4. **Beverage Preferences**: Collects beverage preferences using a rating system
-5. **Final**: Thanks the user and concludes the conversation
+The system uses a single `DynamicAgent` that handles exactly one chapter.
+Once the agent decides the chapter is done it transitions the user to the agent of the next chapter.
 
 ### Key Components
 
 - **DynamicAgent**: A single agent class that handles all conversation states
 - **UserData**: Stores user preferences and tracks conversation state
 - **Agent Configuration**: JSON-based configuration for each state
-- **Event System**: Supports rating and swipe events for preference collection
+- **Event System**: Supports rating and swipe events for preference collection, and evaluation events for outcome presentation
 
-## Configuration
+### Configuration
 
 The system is configured through the mongoDB database, which defines:
 
@@ -46,7 +42,7 @@ Example configuration:
 }
 ```
 
-## State Management
+### State Management
 
 The system uses a state machine approach where:
 
@@ -55,18 +51,46 @@ The system uses a state machine approach where:
 3. The agent updates its instructions based on the current state
 4. User preferences are stored in a dictionary structure
 
-## Event System
+### Event System
 
 Two types of events are supported:
 
 1. **Rating Events**: Users rate items on a scale
 2. **Swipe Events**: Users swipe right (like) or left (dislike)
+3. **Evaluation Event**: Users get a personalized evaluation of their preferences (through a 3rd party provider)
 
-Events have a configurable timeout (default: 5 minutes) to allow users enough time to complete their preferences.
+Events have a configurable timeout (default: 15 minutes) to allow users enough time to complete their preferences.
+
+### User Interface
+
+The frontend provides two main variants:
+
+- Chat: Users interact text-only with the agent
+- Avatar: Users interact voice-only with the agent
+
+For generating the interactive avatar including voice we currently use HeyGen.
 
 ## Usage
 
-1. Set up environment variables for Azure services
+### Docker Compose
+
+1. Set up environment variables (use .env files)
+
+```bash
+docker-compose up -d
+```
+
+This spins up all necessary services:
+
+- Backend
+- Agent
+- Frontend
+- MongoDB
+- Mongo Express (UI for MongoDB)
+
+### Manual
+
+1. Set up environment variables
 
 2. Start the backend:
 
