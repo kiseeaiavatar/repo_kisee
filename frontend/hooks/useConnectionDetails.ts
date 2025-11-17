@@ -19,7 +19,6 @@ export default function useConnectionDetails(
   const [connectionDetails, setConnectionDetails] = useState<ConnectionDetails | null>(null);
 
   const fetchConnectionDetails = useCallback(() => {
-    setConnectionDetails(null);
     const url = new URL(
       process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
       window.location.origin
@@ -36,9 +35,10 @@ export default function useConnectionDetails(
         setConnectionDetails(data);
       })
       .catch((error) => {
+        setConnectionDetails(null);
         console.error("Error fetching connection details:", error);
       });
-  }, []);
+  }, [avatarId, subjectId, variant]);
 
   useEffect(() => {
     fetchConnectionDetails();

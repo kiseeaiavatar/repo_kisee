@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     // Generate participant token
     const participantIdentity = `voice_assistant_user`;
     // TODO make sure room name is unique
-    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 1_000_000)}`;
+    const roomName = `voice_assistant_room_${subjectIdParam}_${Math.floor(Math.random() * 1_000_000)}`;
     const participantToken = await createParticipantToken(
       { identity: participantIdentity },
       roomName,

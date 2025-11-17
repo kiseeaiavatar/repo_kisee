@@ -46,14 +46,17 @@ const AdminDashboard: React.FC = () => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
 
-  const fetchAgents = useCallback(async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/admin/agents`);
-      const data = await response.json();
-      setAgents(data);
-    } catch (error) {
-      console.error("Error fetching agents:", error);
-    }
+  const fetchAgents = useCallback(() => {
+    fetch(`${backendUrl}/api/admin/agents`)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        setAgents(data);
+      })
+      .catch(() => {
+        console.error("Error fetching agents:", error);
+      });
   }, [backendUrl]);
 
   useEffect(() => {
@@ -86,11 +89,12 @@ const AdminDashboard: React.FC = () => {
         : `${backendUrl}/api/admin/agents`;
       const method = editingAgent ? "PUT" : "POST";
 
-      if (formData.user_instruction_type == "none") {
-        delete formData.user_instruction_type;
+      const data = { ...formData };
+      if (data.user_instruction_type == "none") {
+        delete data.user_instruction_type;
       }
-      if (formData.event_type == "none") {
-        delete formData.event_type;
+      if (data.event_type == "none") {
+        delete data.event_type;
       }
 
       const response = await fetch(url, {

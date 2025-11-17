@@ -4,7 +4,6 @@ export default function useHeygenAccessToken() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const fetchAccessToken = useCallback(() => {
-    setAccessToken(null);
     fetch("/api/get-heygen-access-token", {
       method: "POST",
     })
@@ -18,13 +17,14 @@ export default function useHeygenAccessToken() {
         }
       })
       .catch((error) => {
+        setAccessToken(null);
         console.error("Error fetching HeyGen access token:", error);
       });
   }, []);
 
   useEffect(() => {
     if (!accessToken) fetchAccessToken();
-  }, [fetchAccessToken]);
+  }, [fetchAccessToken, accessToken]);
 
   return { accessToken, refreshAccessToken: fetchAccessToken };
 }

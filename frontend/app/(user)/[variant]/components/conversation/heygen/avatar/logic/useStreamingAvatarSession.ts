@@ -49,7 +49,8 @@ export const useStreamingAvatarSession = () => {
   const stop = useCallback(async () => {
     console.log("stop avatar");
     avatarRef.current?.off(StreamingEvents.STREAM_READY, handleStream);
-    avatarRef.current?.off(StreamingEvents.STREAM_DISCONNECTED, stop);
+    avatarRef.current?.off(StreamingEvents.STREAM_DISCONNECTED, stop); // eslint-disable-line react-hooks/immutability
+
     clearMessages();
     // stopVoiceChat();
     setIsListening(false);
