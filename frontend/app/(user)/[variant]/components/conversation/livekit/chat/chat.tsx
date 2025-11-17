@@ -12,7 +12,7 @@ export function Chat() {
   const { messages, send } = useChatAndTranscription();
   const [isSendingMessage, setIsSendingMessage] = React.useState(false);
   const { setMessages } = useContext(ConversationContext);
-  const { scrollRef } = useAutoScroll();
+  const { scrollRef, scrollToBottom } = useAutoScroll();
 
   const participants = useRemoteParticipants();
   const isAgentAvailable2 = participants.some((p) => p.isAgent);
@@ -29,7 +29,8 @@ export function Chat() {
 
   useEffect(() => {
     setMessages(messages);
-  });
+    scrollToBottom();
+  }, [messages, scrollToBottom, setMessages]);
 
   return (
     <>
