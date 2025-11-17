@@ -9,7 +9,7 @@ import {
 } from "@/lib/types";
 import { ReceivedChatMessage, useRoomContext } from "@livekit/components-react";
 import { Room } from "livekit-client";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { BarLoader } from "react-spinners";
 import ConversationContext from "../conversation-context";
@@ -24,11 +24,24 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
   const room = useRoomContext();
 
   const [evaluationUrls, setEvaluationUrls] = useState<MyceliaEvaluationResponseBody | null>(null);
+  const alreadySentRef = useRef(false);
 
-  const generateEvaluation = useCallback(async (body: MyceliaEvaluationRequestBody) => {
+  // send data and transcriptions to backend
+  const myceliaConversation = messagesToMyceliaConversation(messages, room);
+  const myceliaGames = preferencesToMyceliaGames(data.userdata!.preferences);
+
+  useEffect(() => {
+    if (alreadySentRef.current) return;
+    alreadySentRef.current = true;
+
     const url = new URL("/api/evaluation", window.location.origin);
+    const body: MyceliaEvaluationRequestBody = {
+      conversation: myceliaConversation,
+      games: myceliaGames,
+      userinfo: data.userdata!.userinfo,
+    };
 
-    const res = await fetch(url.toString(), {
+    fetch(url.toString(), {
       method: "POST",
       body: JSON.stringify({
         ...body,
@@ -38,27 +51,17 @@ const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => 
           end_time: new Date().toISOString(),
         },
       }),
-    });
-    return res.json();
-  }, []);
-
-  useEffect(() => {
-    // send data and transcriptions to backend
-    const myceliaConversation = messagesToMyceliaConversation(messages, room);
-    const myceliaGames = preferencesToMyceliaGames(data.userdata!.preferences);
-
-    generateEvaluation({
-      conversation: myceliaConversation,
-      games: myceliaGames,
-      userinfo: data.userdata!.userinfo,
     })
+      .then((res) => {
+        return res.json();
+      })
       .then((data: MyceliaEvaluationResponseBody) => {
         setEvaluationUrls(data);
       })
       .catch((error) => {
         console.error("Error generating evaluation:", error);
       });
-  }, [data, room, generateEvaluation, messages]);
+  }, [myceliaConversation, myceliaGames, data.userdata]);
 
   return (
     <div className="flex flex-col flex-1">
