@@ -14,7 +14,6 @@ import {
   useTrackToggle,
 } from "@livekit/components-react";
 import { RoomEvent, Track } from "livekit-client";
-import Image from "next/image";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import ConversationContext from "../../conversation-context";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
@@ -283,16 +282,12 @@ function InteractiveAvatar({ avatar }: { avatar: number }) {
             <AvatarVideo ref={mediaStream} />
           ) : (
             <>
-              <div className="flex flex-col items-center">
-                <Image
-                  className="m-auto"
-                  src={`/avatar-variant-${avatar + 1}.jpg`}
-                  alt={`avatar-variant-${avatar + 1}`}
-                  width={512}
-                  height={512}
-                  style={{ width: "512px", height: "512px" }}
-                  priority
-                />
+              <div
+                className="flex flex-col items-center w-full h-full justify-end bg-no-repeat bg-center bg-contain"
+                style={{
+                  backgroundImage: `url(/avatar-variant-${avatar + 1}.jpg)`,
+                }}
+              >
                 <div className="p-4">
                   Einen Moment Geduld, bitte.
                   <br />

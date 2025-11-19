@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/Button";
-import Image from "next/image";
 import { useState } from "react";
 
 export default function AvatarSelect({ onDone }: { onDone: (idx: number) => void }) {
@@ -17,17 +16,12 @@ export default function AvatarSelect({ onDone }: { onDone: (idx: number) => void
     return (
       <div
         key={idx}
-        className={`rounded-3xl cursor-pointer border-2 ${variant == idx ? "border-primary-500" : "border-transparent"} hover:border-primary-500 overflow-hidden`}
+        className={`rounded-3xl cursor-pointer border-2 ${variant == idx ? "border-primary-500" : "border-primary-200"} hover:border-primary-500 overflow-hidden w-[200px] h-[200px] bg-center bg-cover`}
+        style={{
+          backgroundImage: `url(/${img})`,
+        }}
         onClick={() => selectAvatarVariant(idx)}
-      >
-        <Image
-          src={`/${img}`}
-          alt={`Avatar - Variant ${idx}`}
-          width={200}
-          height={200}
-          style={{ width: "200px", height: "200px" }}
-        />
-      </div>
+      ></div>
     );
   });
 
