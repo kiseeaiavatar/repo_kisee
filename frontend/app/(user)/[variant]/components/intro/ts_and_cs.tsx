@@ -26,7 +26,11 @@ export default function TsAndCs({ onDone }: { onDone: () => void }) {
             berufliche Interessen und Fähigkeiten besser zu verstehen und Ihnen passende Optionen
             anzubieten. Durch Ihre Zustimmung erklären Sie sich einverstanden mit der Verarbeitung
             Ihrer Daten für diese Zwecke gemäß unseres{" "}
-            <a href="/terms_and_conditions" target="_blank" className="underline">
+            <a
+              href="/KISEE-Datenschutzkonzept_HS-Offenburg.pdf"
+              target="_blank"
+              className="underline"
+            >
               Datenschutzkonzepts
             </a>
           </label>
