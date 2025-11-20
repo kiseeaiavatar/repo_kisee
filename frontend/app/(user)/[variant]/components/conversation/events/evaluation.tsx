@@ -1,8 +1,10 @@
 import { Button } from "@/components/Button";
 import {
+  ConversationChapter,
   EventInput,
   EventItemResult,
   MyceliaConversation,
+  MyceliaConversationItem,
   MyceliaEvaluationRequestBody,
   MyceliaEvaluationResponseBody,
   MyceliaGames,
@@ -20,14 +22,14 @@ interface EvaluationEventProps {
 }
 
 const EvaluationEvent: React.FC<EvaluationEventProps> = ({ data, onSubmit }) => {
-  const { messages } = useContext(ConversationContext);
+  const { messages, chapters } = useContext(ConversationContext);
   const room = useRoomContext();
 
   const [evaluationUrls, setEvaluationUrls] = useState<MyceliaEvaluationResponseBody | null>(null);
   const alreadySentRef = useRef(false);
 
   // send data and transcriptions to backend
-  const myceliaConversation = messagesToMyceliaConversation(messages, room);
+  const myceliaConversation = messagesToMyceliaConversation(messages, chapters, room);
   const myceliaGames = preferencesToMyceliaGames(data.userdata!.preferences);
 
   useEffect(() => {
@@ -105,13 +107,51 @@ export default EvaluationEvent;
 
 function messagesToMyceliaConversation(
   messages: ReceivedChatMessage[],
+  chapters: ConversationChapter[],
   room: Room
 ): MyceliaConversation {
-  return messages.map((m) => ({
-    role: m.from?.identity === room.localParticipant.identity ? "user" : "agent",
-    timestamp: m.timestamp,
-    content: m.message,
-  }));
+  // Group chapters by the messageId they should appear before
+  const byMessage = chapters.reduce((map: Record<string, ConversationChapter[]>, chapter) => {
+    (map[chapter.messageId || "first"] ||= []).push(chapter);
+    return map;
+  }, {});
+
+  const merged: MyceliaConversation = [];
+
+  if (byMessage["first"])
+    merged.push(
+      ...byMessage["first"].map(
+        (chapter) =>
+          ({
+            role: "chapter",
+            content: chapter.title,
+          }) as MyceliaConversationItem
+      )
+    );
+
+  for (const message of messages) {
+    // Insert the message itself
+    merged.push({
+      role: message.from?.identity === room.localParticipant.identity ? "user" : "agent",
+      timestamp: message.timestamp,
+      content: message.message,
+    });
+
+    // Insert chapters that belong after this message
+    if (byMessage[message.id]) {
+      merged.push(
+        ...byMessage[message.id].map(
+          (chapter) =>
+            ({
+              role: "chapter",
+              content: chapter.title,
+            }) as MyceliaConversationItem
+        )
+      );
+    }
+  }
+
+  return merged;
 }
 
 function preferencesToMyceliaGames(preferences: {
