@@ -1,6 +1,8 @@
 import { Button } from "@/components/Button";
 import { useLocalStorage } from "@/lib/utils";
 import Image from "next/image";
+import { useContext, useState } from "react";
+import ConversationContext from "./conversation-context";
 import ProcessOverview from "./process-overview";
 
 interface SidebarProps {
@@ -10,6 +12,13 @@ interface SidebarProps {
 
 export default function Sidebar({ chapter, onCancel }: SidebarProps) {
   const [devMode] = useLocalStorage("kisee:debug", false);
+  const [prevChapter, setPrevChapter] = useState(chapter);
+  const { addChapter } = useContext(ConversationContext);
+
+  if (chapter !== prevChapter) {
+    setPrevChapter(chapter);
+    addChapter(chapter);
+  }
 
   return (
     <div className="bg-primary-400 rounded-r-3xl p-4 flex flex-col justify-between h-full">

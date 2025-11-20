@@ -42,10 +42,14 @@ export interface EventItemResult {
   rating: number;
 }
 
-export type MyceliaConversation = {
-  role: string;
+export type MyceliaConversationItem = {
+  // role: string;
+  role: "user" | "agent" | "chapter";
   content: string;
-}[];
+  timestamp?: number;
+};
+
+export type MyceliaConversation = MyceliaConversationItem[];
 
 export type MyceliaGames = {
   name: string;
@@ -61,4 +65,9 @@ export type MyceliaEvaluationRequestBody = {
 export type MyceliaEvaluationResponseBody = {
   mobileUrl: string;
   desktopUrl: string;
+};
+
+export type ConversationChapter = {
+  title: string;
+  messageId?: string;
 };
