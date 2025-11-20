@@ -8,9 +8,11 @@ export const useDebugMode = ({ logLevel }: { logLevel?: LogLevel } = {}) => {
   React.useEffect(() => {
     setLogLevel(logLevel ?? "debug");
 
+    // @ts-expect-error ignore missing __lk_room property
     window.__lk_room = room;
 
     return () => {
+      // @ts-expect-error ignore missing __lk_room property
       window.__lk_room = undefined;
     };
   }, [room, logLevel]);
