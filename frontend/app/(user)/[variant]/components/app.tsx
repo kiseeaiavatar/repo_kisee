@@ -63,7 +63,7 @@ export default function App({ variant }: AppProps) {
       case AppState.Welcome:
         return <Welcome onDone={handleNext} />;
       case AppState.Intro:
-        return <Intro onDone={handleNext} variant={variant} />;
+        return <Intro onDone={handleNext} />;
       case AppState.Conversation:
         return (
           <Conversation

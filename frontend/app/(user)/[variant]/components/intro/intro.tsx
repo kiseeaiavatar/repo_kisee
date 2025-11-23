@@ -18,12 +18,12 @@ enum StartState {
 
 interface IntroProps {
   onDone?: ({ avatar, subjectId }: { avatar?: number; subjectId: string }) => void;
-  variant: Variant;
 }
 
-export default function Intro({ onDone, variant }: IntroProps) {
+export default function Intro({ onDone }: IntroProps) {
   const [myState, setMyState] = useState(StartState.SubjectId);
-  const [avatar, setAvatar] = useState<number | undefined>(undefined);
+  // last-minute-change: always use avatar 1 (male)
+  const [avatar, setAvatar] = useState<number>(1);
   const [subjectId, setSubjectId] = useState("");
 
   function next() {
@@ -32,11 +32,13 @@ export default function Intro({ onDone, variant }: IntroProps) {
         setMyState(StartState.Explanation);
         break;
       case StartState.Explanation:
-        if (variant === "avatar") {
-          setMyState(StartState.Avatar);
-        } else {
-          setMyState(StartState.TsAndCs);
-        }
+        // if (variant === "avatar") {
+        //   setMyState(StartState.Avatar);
+        // } else {
+        //   setMyState(StartState.TsAndCs);
+        // }
+        // last-minute-change: no avatar select
+        setMyState(StartState.TsAndCs);
         break;
       case StartState.Avatar:
         setMyState(StartState.TsAndCs);
