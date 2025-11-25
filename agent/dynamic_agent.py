@@ -1,14 +1,10 @@
-from user_data import UserData
-
-import os
 import json
 import logging
-from livekit.agents import (
-    function_tool,
-    RunContext,
-    Agent,
-    get_job_context,
-)
+import os
+
+from livekit.agents import Agent, RunContext, function_tool, get_job_context
+
+from user_data import UserData
 
 # Type alias for RunContext with UserData
 RunContext_T = RunContext[UserData]
@@ -175,31 +171,31 @@ class DynamicAgent(Agent):
             event_result = ""
             try:
                 if event_type == "lifeline":
-                    event_result = await show_lifeline_event(agent_config, self.session.userdata.to_dict())
+                    event_result = await show_lifeline_event(agent_config)
                     await self.session.generate_reply(
                         user_input=f"{event_result}"
                     )
                     print(f"lifeline result {event_result}")
                 elif event_type == "rating":
-                    event_result = await show_rating_event(agent_config, self.session.userdata.to_dict())
+                    event_result = await show_rating_event(agent_config)
                     await self.session.generate_reply(
                         user_input=f"{event_result}"
                     )
                     print(f"rating event result {event_result}")
                 elif event_type == "swipe":
-                    event_result = await show_swipe_event(agent_config, self.session.userdata.to_dict())
+                    event_result = await show_swipe_event(agent_config)
                     await self.session.generate_reply(
                         user_input=f"{event_result}"
                     )
                     print(f"swipe event result {event_result}")
                 elif event_type == "swipe2":
-                    event_result = await show_swipe2_event(agent_config, self.session.userdata.to_dict())
+                    event_result = await show_swipe2_event(agent_config)
                     await self.session.generate_reply(
                         user_input=f"{event_result}"
                     )
                     print(f"swipe2 event result {event_result}")
                 elif event_type == "evaluation":
-                    event_result = await show_evaluation_event(agent_config, self.session.userdata.to_dict())
+                    await show_evaluation_event(agent_config, self.session.userdata.to_dict())
                     print(f"evaluation event result {event_result}")
                 else:
                     return
@@ -213,7 +209,6 @@ class DynamicAgent(Agent):
 
 async def show_rating_event(
     agent_config: dict,
-    userdata: dict,
 ) -> dict:
     logger.debug("show_rating_event")
     chapter_id = agent_config["chapter_id"]
@@ -228,14 +223,12 @@ async def show_rating_event(
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
-        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
 
 async def show_swipe_event(
     agent_config: dict,
-    userdata: dict,
 ) -> dict:
     logger.debug("show_swipe_event")
     chapter_id = agent_config["chapter_id"]
@@ -250,14 +243,12 @@ async def show_swipe_event(
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
-        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
 
 async def show_swipe2_event(
     agent_config: dict,
-    userdata: dict,
 ) -> dict:
     logger.debug("show_swipe2_event")
     chapter_id = agent_config["chapter_id"]
@@ -272,21 +263,18 @@ async def show_swipe2_event(
         "description": event_input["description"],
         "items": event_input["items"],
         "chapter_id": chapter_id,
-        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
 
 async def show_lifeline_event(
     agent_config: dict,
-    userdata: dict,
 ) -> dict:
     logger.debug("show_lifeline_event")
     chapter_id = agent_config["chapter_id"]
     payload={
         "type": "lifeline",
         "chapter_id": chapter_id,
-        "userdata": userdata
     }
     result = await perform_rpc_with_payload(payload)
     return result
@@ -294,7 +282,7 @@ async def show_lifeline_event(
 async def show_evaluation_event(
     agent_config: dict,
     userdata: dict,
-) -> dict:
+):
     logger.debug("show_evaluation_event")
     chapter_id = agent_config["chapter_id"]
     payload={
@@ -302,8 +290,13 @@ async def show_evaluation_event(
         "chapter_id": chapter_id,
         "userdata": userdata
     }
-    result = await perform_rpc_with_payload(payload)
-    return result
+
+    room = get_job_context().room
+    text = json.dumps(payload)
+    # use send_text instead of perform_rpc which is limited to 15kB payload data
+    await room.local_participant.send_text(text, 
+      topic='evaluation'
+    )
 
 async def perform_rpc_with_payload(payload: dict):
     room = get_job_context().room

@@ -109,6 +109,18 @@ export default function Conversation({ variant, avatar, subjectId, onCancel }: C
               );
             });
           });
+
+          room.registerTextStreamHandler("evaluation", async (reader, _participantInfo) => {
+            // Get the entire text after the stream completes.
+            const text = await reader.readAll();
+            const input = JSON.parse(text);
+            const eventType = input.type as EventType;
+
+            setEventData({
+              type: eventType,
+              input,
+            });
+          });
         })
         .catch((error) => {
           /* toastAlert({ */
