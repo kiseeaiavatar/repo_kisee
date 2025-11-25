@@ -303,3 +303,35 @@ az containerapp update \
     --resource-group $AZ_RESOURCE_GROUP \
     --image $AZ_REGISTRY_NAME".azurecr.io/"$AZ_CONTAINER_AGENT_APP_NAME":helloworld123"
 ```
+
+## Database Backup
+
+You can use `mongoexport` to export the agent configurations, e.g. to CSV:
+
+```shell
+mongoexport\
+  --db=voice_assistant_staging\
+  --collection=agents\
+  --type=csv\
+  --out=`date +%Y%m%d%H%M%S`agents.csv\
+  --fields=_id,order,chapter_id,id,agent_instructions,user_instruction,user_instruction_type,end_requirement,event_type,event_input,updated_at,created_at\
+  <MONGO_URI>
+```
+
+Use `mongodump` to backup the agent configurations:
+
+```shell
+mongodump \
+  -d=voice_assistant_staging \
+  -c=agents \
+  <MONGO_URI>
+```
+
+And then `mongoimport` to import the backup, e.g. into a local database:
+
+```shell
+mongorestore \
+  -d voice_assistant_local \
+  mongodb://localhost:27017 \
+  dump/voice_assistant_staging/agents.bson
+```

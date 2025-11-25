@@ -25,6 +25,7 @@
             nodejs_22
             pnpm
             azure-cli
+            mongodb-tools
           ];
         };
       }
