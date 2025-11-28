@@ -1,8 +1,10 @@
-import json
 import datetime
+import json
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from livekit.agents import Agent
+
 
 @dataclass
 class UserData:
@@ -16,6 +18,7 @@ class UserData:
         agents: List of all agents from database
         state_transitions: Dictionary storing state transitions
     """
+
     preferences: Dict[str, Any] = field(default_factory=dict)
     prev_state: Optional[str] = None
     agents: list = field(default_factory=list)
@@ -26,7 +29,9 @@ class UserData:
     subject_id: str = ""
     avatar_id: str = ""
     variant: str = ""
-    start_time = datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000 # in ms
+    start_time = (
+        datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000
+    )  # in ms
 
     current_state: str = "Begrüßung"
     state_transitions: Dict[str, str] = field(default_factory=dict)
@@ -48,7 +53,6 @@ class UserData:
         if agents:
             self.current_state = agents[0]["chapter_id"]
             self.state_transitions = self._create_state_transitions()
-
 
     def _create_state_transitions(self) -> Dict[str, str]:
         """Create state transitions based on agent order"""
@@ -78,8 +82,8 @@ class UserData:
                 "subject_id": self.subject_id,
                 "avatar_id": self.avatar_id,
                 "variant": self.variant,
-                "start_time": self.start_time
-            }
+                "start_time": self.start_time,
+            },
         }
 
     def summarize(self) -> str:
@@ -89,9 +93,12 @@ class UserData:
     def get_current_agent(self) -> Optional[Dict]:
         """Get the current agent configuration"""
         return next(
-            (agent for agent in self.agents if agent["chapter_id"]
-             == self.current_state),
-            None
+            (
+                agent
+                for agent in self.agents
+                if agent["chapter_id"] == self.current_state
+            ),
+            None,
         )
 
     def get_state_transitions(self) -> Dict[str, str]:

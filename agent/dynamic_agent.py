@@ -25,6 +25,7 @@ logger.addHandler(console_handler)
 
 logging.getLogger("pymongo").setLevel(logging.INFO)
 
+
 @function_tool
 async def transfer_to_next_agent(
     context: RunContext_T,
@@ -38,7 +39,10 @@ async def transfer_to_next_agent(
     next_agent_idx = current_agent_idx + 1
     print(f"next id {next_agent_idx}, len {len(userdata.dynamic_agents)}")
     if next_agent_idx >= len(userdata.dynamic_agents):
-        await context.session.generate_reply(tool_choice="none", instructions="Informiere den Nutzer, dass wir am Ende der Beratung angelangt sind")
+        await context.session.generate_reply(
+            tool_choice="none",
+            instructions="Informiere den Nutzer, dass wir am Ende der Beratung angelangt sind",
+        )
         return "Wir sind fertig für heute"
 
     next_agent = userdata.dynamic_agents[next_agent_idx]
@@ -47,6 +51,7 @@ async def transfer_to_next_agent(
 
     # return next_agent, f"Transferring to agent {next_agent_idx}"
     return next_agent
+
 
 COMMON_INSTRUCTIONS_DEFAULT = (
     "Du bist ein digitaler Berufsberater (Avatar) und führst Sprachinteraktionen mit Nutzer:innen durch, die sich beruflich orientieren möchten. "
@@ -75,8 +80,8 @@ COMMON_INSTRUCTIONS_DEFAULT = (
     "Wenn du den Nutzer zu einem anderen Agent weiterleitest sei still und sage **NICHT** 'Ich leite dich nun weiter'."
 )
 
-COMMON_INSTRUCTIONS = os.getenv(
-    "COMMON_INSTRUCTIONS", COMMON_INSTRUCTIONS_DEFAULT)
+COMMON_INSTRUCTIONS = os.getenv("COMMON_INSTRUCTIONS", COMMON_INSTRUCTIONS_DEFAULT)
+
 
 class DynamicAgent(Agent):
     config: dict
@@ -84,9 +89,7 @@ class DynamicAgent(Agent):
     def __init__(self, config: dict) -> None:
         """Initialize the agent with all available tools."""
         instructions = (
-            COMMON_INSTRUCTIONS
-            + "\n\n"
-            + ( config["agent_instructions"] or "" )
+            COMMON_INSTRUCTIONS + "\n\n" + (config["agent_instructions"] or "")
         )
 
         if config["end_requirement"] and config["end_requirement"] != "SOFORT":
@@ -102,7 +105,7 @@ class DynamicAgent(Agent):
                 transfer_to_next_agent,
             ],
         )
-        self.config =config
+        self.config = config
         # logger.debug("__init__")
 
     async def on_enter(self) -> None:
@@ -143,7 +146,7 @@ class DynamicAgent(Agent):
 
         await send_chapter(chapter_id)
 
-        user_instruction=self.config["user_instruction"]
+        user_instruction = self.config["user_instruction"]
         if self.config["user_instruction_type"] == "dm":
             print("say first message literally")
             await self.session.say(user_instruction)
@@ -162,7 +165,9 @@ class DynamicAgent(Agent):
 
         if self.config["end_requirement"] == "SOFORT":
             print("goto next agent immediately")
-            self.session.update_agent(userdata.dynamic_agents[userdata.current_agent_idx + 1])
+            self.session.update_agent(
+                userdata.dynamic_agents[userdata.current_agent_idx + 1]
+            )
             userdata.current_agent_idx += 1
 
     async def generate_reply_from_event_result(self, event_result: dict) -> None:
@@ -201,12 +206,17 @@ class DynamicAgent(Agent):
                 else:
                     return
 
-                self.session.userdata.preferences[f"preferences_{self.session.userdata.current_agent_idx}_{event_type}"] = event_result
+                self.session.userdata.preferences[
+                    f"preferences_{self.session.userdata.current_agent_idx}_{event_type}"
+                ] = event_result
 
             except json.JSONDecodeError as e:
-                logger.error(f"Failed to show {event_type} event due to RPC issue: {str(e)}")
+                logger.error(
+                    f"Failed to show {event_type} event due to RPC issue: {str(e)}"
+                )
             except Exception as e:
                 logger.error(f"Failed to show {event_type} event: {str(e)}")
+
 
 async def show_rating_event(
     agent_config: dict,
@@ -219,7 +229,7 @@ async def show_rating_event(
         return
 
     event_input = agent_config["event_input"]
-    payload={
+    payload = {
         "type": "rating",
         "description": event_input["description"],
         "items": event_input["items"],
@@ -227,6 +237,7 @@ async def show_rating_event(
     }
     result = await perform_rpc_with_payload(payload)
     return result
+
 
 async def show_swipe_event(
     agent_config: dict,
@@ -239,7 +250,7 @@ async def show_swipe_event(
         return
 
     event_input = agent_config["event_input"]
-    payload={
+    payload = {
         "type": "swipe",
         "description": event_input["description"],
         "items": event_input["items"],
@@ -247,6 +258,7 @@ async def show_swipe_event(
     }
     result = await perform_rpc_with_payload(payload)
     return result
+
 
 async def show_swipe2_event(
     agent_config: dict,
@@ -259,7 +271,7 @@ async def show_swipe2_event(
         return
 
     event_input = agent_config["event_input"]
-    payload={
+    payload = {
         "type": "swipe2",
         "description": event_input["description"],
         "items": event_input["items"],
@@ -268,17 +280,19 @@ async def show_swipe2_event(
     result = await perform_rpc_with_payload(payload)
     return result
 
+
 async def show_lifeline_event(
     agent_config: dict,
 ) -> dict:
     logger.debug("show_lifeline_event")
     chapter_id = agent_config["chapter_id"]
-    payload={
+    payload = {
         "type": "lifeline",
         "chapter_id": chapter_id,
     }
     result = await perform_rpc_with_payload(payload)
     return result
+
 
 async def show_evaluation_event(
     agent_config: dict,
@@ -286,18 +300,13 @@ async def show_evaluation_event(
 ):
     logger.debug("show_evaluation_event")
     chapter_id = agent_config["chapter_id"]
-    payload={
-        "type": "evaluation",
-        "chapter_id": chapter_id,
-        "userdata": userdata
-    }
+    payload = {"type": "evaluation", "chapter_id": chapter_id, "userdata": userdata}
 
     room = get_job_context().room
     text = json.dumps(payload)
     # use send_text instead of perform_rpc which is limited to 15kB payload data
-    await room.local_participant.send_text(text, 
-      topic='evaluation'
-    )
+    await room.local_participant.send_text(text, topic="evaluation")
+
 
 async def perform_rpc_with_payload(payload: dict):
     room = get_job_context().room
@@ -307,7 +316,7 @@ async def perform_rpc_with_payload(payload: dict):
         destination_identity=participant_identity,
         method="showNotification",
         payload=json.dumps(payload),
-        response_timeout=TOOL_TIMEOUT
+        response_timeout=TOOL_TIMEOUT,
     )
 
     # ensure it's a not empty string
@@ -321,9 +330,10 @@ async def perform_rpc_with_payload(payload: dict):
 
     return []
 
+
 async def send_chapter(chapter_id: str):
     logger.debug(f"send_chapter: {chapter_id}")
-    payload={
+    payload = {
         "type": "chapter",
         "chapter_id": chapter_id,
     }
