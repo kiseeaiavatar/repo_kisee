@@ -165,6 +165,13 @@ class DynamicAgent(Agent):
             self.session.update_agent(userdata.dynamic_agents[userdata.current_agent_idx + 1])
             userdata.current_agent_idx += 1
 
+    async def generate_reply_from_event_result(self, event_result: dict) -> None:
+        # Create new items without "skill" (UUIDs result in many input tokens)
+        modified = [
+            {k: v for k, v in obj.items() if k != "skill"} for obj in event_result
+        ]
+        await self.session.generate_reply(user_input=f"{modified}")
+
     async def show_event(self, agent_config: Agent) -> None:
         if "event_type" in agent_config:
             event_type = agent_config["event_type"]
@@ -172,30 +179,24 @@ class DynamicAgent(Agent):
             try:
                 if event_type == "lifeline":
                     event_result = await show_lifeline_event(agent_config)
-                    await self.session.generate_reply(
-                        user_input=f"{event_result}"
-                    )
+                    await self.session.generate_reply(user_input=f"{event_result}")
                     print(f"lifeline result {event_result}")
                 elif event_type == "rating":
                     event_result = await show_rating_event(agent_config)
-                    await self.session.generate_reply(
-                        user_input=f"{event_result}"
-                    )
+                    await self.generate_reply_from_event_result(event_result)
                     print(f"rating event result {event_result}")
                 elif event_type == "swipe":
                     event_result = await show_swipe_event(agent_config)
-                    await self.session.generate_reply(
-                        user_input=f"{event_result}"
-                    )
+                    await self.generate_reply_from_event_result(event_result)
                     print(f"swipe event result {event_result}")
                 elif event_type == "swipe2":
                     event_result = await show_swipe2_event(agent_config)
-                    await self.session.generate_reply(
-                        user_input=f"{event_result}"
-                    )
+                    await self.generate_reply_from_event_result(event_result)
                     print(f"swipe2 event result {event_result}")
                 elif event_type == "evaluation":
-                    await show_evaluation_event(agent_config, self.session.userdata.to_dict())
+                    await show_evaluation_event(
+                        agent_config, self.session.userdata.to_dict()
+                    )
                     print(f"evaluation event result {event_result}")
                 else:
                     return
